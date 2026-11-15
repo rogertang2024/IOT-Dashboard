@@ -1,0 +1,15 @@
+- id: 'farm_motion_detection_alert'
+  alias: 'Farm: Motion Alert'
+  description: 'Notify when PIR sensor detects human or animal movement'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.farm_motion_detection
+      to: 'on'
+  mode: single
+  action:
+    - action: persistent_notification.create
+      data:
+        title: 'Farm Alert: Motion Detected'
+        message: 'PIR motion sensor detected movement (human or animal) at {{ now().strftime("%H:%M:%S") }}. Check the Farm Camera stream.'
+        notification_id: 'farm_motion_alert'
+    - delay: '00:00:30'

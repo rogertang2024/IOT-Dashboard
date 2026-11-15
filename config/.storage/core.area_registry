@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "minor_version": 9,
+  "key": "core.area_registry",
+  "data": {
+    "areas": [
+      {
+        "aliases": [],
+        "floor_id": "first_floor",
+        "humidity_entity_id": null,
+        "icon": "mdi:bed",
+        "id": "bedroom",
+        "labels": [],
+        "name": "Bedroom",
+        "picture": null,
+        "temperature_entity_id": null,
+        "created_at": "2026-11-08T17:30:46.333218+00:00",
+        "modified_at": "2026-11-08T17:30:46.333222+00:00"
+      }
+    ]
+  }
+}

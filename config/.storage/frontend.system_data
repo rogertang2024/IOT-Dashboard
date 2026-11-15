@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "frontend.system_data",
+  "data": {
+    "core": {
+      "onboarded_version": "2026.12.0.dev0",
+      "onboarded_date": "2026-11-07T17:27:41.533Z",
+      "surveys": {
+        "onboarding": {
+          "date": "2026-11-14T16:02:42.799Z",
+          "action": "dismissed"
+        }
+      },
+      "default_panel": "lovelace"
+    }
+  }
+}

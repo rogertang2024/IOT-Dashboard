@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "minor_version": 1,
+  "key": "person",
+  "data": {
+    "items": [
+      {
+        "id": "roger",
+        "name": "Roger",
+        "user_id": "905ad9a3c6ed46ee980b436600e7931f",
+        "device_trackers": []
+      },
+      {
+        "id": "roger_tang",
+        "name": "Roger Tang",
+        "user_id": "d9b3c8dfbed44aa985c17c6c896806e7",
+        "device_trackers": [
+          "device_tracker.roger_phone"
+        ]
+      }
+    ]
+  }
+}

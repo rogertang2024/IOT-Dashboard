@@ -1,0 +1,97 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# Dedicated Smart Farm Dashboard in Sidebar
+lovelace:
+  dashboards:
+    smart-farm:
+      mode: yaml
+      title: Smart Farm
+      icon: mdi:sprout
+      show_in_sidebar: true
+      filename: farm_dashboard.yaml
+
+
+# MQTT Smart Farm Entities
+mqtt:
+  sensor:
+    - name: "Farm Temperature"
+      state_topic: "farm/temp"
+      unit_of_measurement: "°C"
+      device_class: "temperature"
+      state_class: "measurement"
+      unique_id: "farm_temp"
+
+    - name: "Farm Soil Moisture"
+      state_topic: "farm/soil"
+      unit_of_measurement: "%"
+      icon: "mdi:watering-can"
+      state_class: "measurement"
+      unique_id: "farm_soil"
+
+  binary_sensor:
+    - name: "Farm Motion Detection"
+      state_topic: "farm/pir"
+      payload_on: "1"
+      payload_off: "0"
+      device_class: "motion"
+      unique_id: "farm_pir"
+
+    - name: "Farm Water Level"
+      state_topic: "farm/water"
+      payload_on: "1"
+      payload_off: "0"
+      device_class: "moisture"
+      unique_id: "farm_water"
+
+    - name: "Farm Light Level"
+      state_topic: "farm/ldr"
+      payload_on: "1"
+      payload_off: "0"
+      device_class: "light"
+      unique_id: "farm_ldr"
+
+  switch:
+    - name: "Farm Water Pump"
+      state_topic: "farm/pump/state"
+      command_topic: "farm/pump"
+      payload_on: "ON"
+      payload_off: "OFF"
+      icon: "mdi:pump"
+      unique_id: "farm_pump"
+
+# Live Meteorological & Air Quality Sensors (Open-Meteo)
+rest:
+  - resource: "https://api.open-meteo.com/v1/forecast?latitude=39.9719&longitude=-86.2106&current=surface_pressure"
+    scan_interval: 600
+    sensor:
+      - name: "Farm Barometric Pressure"
+        value_template: "{{ value_json.current.surface_pressure }}"
+        unit_of_measurement: "hPa"
+        device_class: "atmospheric_pressure"
+        state_class: "measurement"
+        unique_id: "farm_barometric_pressure"
+
+  - resource: "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=39.9719&longitude=-86.2106&current=us_aqi,pm2_5"
+    scan_interval: 600
+    sensor:
+      - name: "Farm Air Quality Index"
+        value_template: "{{ value_json.current.us_aqi }}"
+        device_class: "aqi"
+        state_class: "measurement"
+        unique_id: "farm_air_quality_index"
+
+      - name: "Farm PM2.5"
+        value_template: "{{ value_json.current.pm2_5 }}"
+        unit_of_measurement: "µg/m³"
+        device_class: "pm25"
+        state_class: "measurement"
+        unique_id: "farm_pm2_5"

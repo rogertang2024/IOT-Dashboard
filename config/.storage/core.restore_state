@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "core.restore_state",
+  "data": [
+    {
+      "state": {"entity_id":"conversation.home_assistant","state":"unknown","attributes":{"friendly_name":"Home Assistant","supported_features":1},"last_changed":"2026-11-15T16:28:51.365732+00:00","last_reported":"2026-11-15T16:28:51.365732+00:00","last_updated":"2026-11-15T16:28:51.365732+00:00","context":{"id":"01M7G0MGS58XRGQKVQD2W2R3VB","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": null
+    },
+    {
+      "state": {"entity_id":"event.backup_automatic_backup","state":"unknown","attributes":{"event_types":["completed","failed","in_progress"],"event_type":null,"friendly_name":"Backup"},"last_changed":"2026-11-15T16:28:51.597219+00:00","last_reported":"2026-11-15T16:28:51.597219+00:00","last_updated":"2026-11-15T16:28:51.597219+00:00","context":{"id":"01M7G0MH0D4XQRXBZ7F1B8YYMA","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "last_event_type": null,
+        "last_event_attributes": null
+      },
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "9b13852f4d1a95a28a13f094b7906212"
+    },
+    {
+      "state": {"entity_id":"person.roger","state":"unknown","attributes":{"editable":true,"id":"roger","device_trackers":[],"in_zones":[],"source":"person.roger","user_id":"905ad9a3c6ed46ee980b436600e7931f","friendly_name":"Roger"},"last_changed":"2026-11-15T16:28:52.831811+00:00","last_reported":"2026-11-15T16:28:52.831811+00:00","last_updated":"2026-11-15T16:28:52.831811+00:00","context":{"id":"01M7G0MJ6ZAJB1QP59JCXCP680","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "b0262f8b49a1494df2afe0c254512506"
+    },
+    {
+      "state": {"entity_id":"person.roger_tang","state":"not_home","attributes":{"editable":true,"id":"roger_tang","device_trackers":["device_tracker.roger_phone"],"in_zones":[],"latitude":39.971979,"longitude":-86.2104726,"gps_accuracy":100.0,"source":"person.roger_tang","user_id":"d9b3c8dfbed44aa985c17c6c896806e7","friendly_name":"Roger Tang"},"last_changed":"2026-11-15T16:28:52.832029+00:00","last_reported":"2026-11-15T16:28:52.832029+00:00","last_updated":"2026-11-15T16:28:52.832029+00:00","context":{"id":"01M7G0MJ70ZYBTZY3QEZNN2K8Y","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "82ceb392f8dc858beb54e46c2f4fe26c"
+    },
+    {
+      "state": {"entity_id":"automation.farm_motion_alert","state":"on","attributes":{"id":"farm_motion_detection_alert","last_triggered":"2026-11-15T16:28:23.364707+00:00","mode":"single","current":0,"friendly_name":"Farm: Motion Alert"},"last_changed":"2026-11-15T16:28:54.507284+00:00","last_reported":"2026-11-15T16:28:54.507284+00:00","last_updated":"2026-11-15T16:28:54.507284+00:00","context":{"id":"01M7G0MKVB0BCC959QJTVFS5C5","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "248f559e9eb9ac28b833c845d41162df"
+    },
+    {
+      "state": {"entity_id":"binary_sensor.roger_phone_high_accuracy_mode","state":"off","attributes":{"icon":"mdi:crosshairs-gps","friendly_name":"Roger phone High accuracy mode"},"last_changed":"2026-11-15T16:28:57.404315+00:00","last_reported":"2026-11-15T16:28:57.404315+00:00","last_updated":"2026-11-15T16:28:57.404315+00:00","context":{"id":"01M7G0MPNW6P9K3721V2CT40C5","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "58fc102ed62fac3ff0ce92784b0cfc7e"
+    },
+    {
+      "state": {"entity_id":"device_tracker.roger_phone","state":"not_home","attributes":{"tracking_type":"position","in_zones":[],"source_type":"gps","latitude":39.971979,"longitude":-86.2104726,"gps_accuracy":100.0,"altitude":243.0,"course":0,"speed":0,"vertical_accuracy":100,"friendly_name":"Roger phone"},"last_changed":"2026-11-15T16:28:57.405056+00:00","last_reported":"2026-11-15T16:28:57.405056+00:00","last_updated":"2026-11-15T16:28:57.405056+00:00","context":{"id":"01M7G0MPNX42DFZ8QFBEGJHNRA","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "data": {
+          "gps": [
+            39.971979,
+            -86.2104726
+          ],
+          "gps_accuracy": 100.0,
+          "speed": 0,
+          "altitude": 243.0,
+          "course": 0,
+          "vertical_accuracy": 100
+        }
+      },
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "7e58234f08957ee7a7e9ff6951754dcd"
+    },
+    {
+      "state": {"entity_id":"notify.roger_phone","state":"unknown","attributes":{"friendly_name":"Roger phone","supported_features":1},"last_changed":"2026-11-15T16:28:57.405614+00:00","last_reported":"2026-11-15T16:28:57.405614+00:00","last_updated":"2026-11-15T16:28:57.405614+00:00","context":{"id":"01M7G0MPNX4EDCVJD01MRYJ6XC","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "3cb345885233678511fda44d3a274430"
+    },
+    {
+      "state": {"entity_id":"sensor.roger_phone_battery_level","state":"90","attributes":{"state_class":"measurement","unit_of_measurement":"%","device_class":"battery","icon":"mdi:battery-90","friendly_name":"Roger phone Battery level"},"last_changed":"2026-11-15T16:28:57.406319+00:00","last_reported":"2026-11-15T16:28:57.406319+00:00","last_updated":"2026-11-15T16:28:57.406319+00:00","context":{"id":"01M7G0MPNYRPJGNK04S8JA1TCS","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "native_value": 90,
+        "native_unit_of_measurement": "%"
+      },
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "4b7414c3c05eb88ed325d65f585df6db"
+    },
+    {
+      "state": {"entity_id":"sensor.roger_phone_battery_state","state":"discharging","attributes":{"options":["charging","discharging","full","not_charging"],"device_class":"enum","icon":"mdi:battery-minus","friendly_name":"Roger phone Battery state"},"last_changed":"2026-11-15T16:28:57.406563+00:00","last_reported":"2026-11-15T16:28:57.406563+00:00","last_updated":"2026-11-15T16:28:57.406563+00:00","context":{"id":"01M7G0MPNY5N6TWANPYK7KETGV","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "native_value": "discharging",
+        "native_unit_of_measurement": null
+      },
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "074422735d68709680f2bb3b0bd2da6a"
+    },
+    {
+      "state": {"entity_id":"sensor.roger_phone_charger_type","state":"none","attributes":{"options":["ac","usb","wireless","dock","none"],"device_class":"enum","icon":"mdi:battery","friendly_name":"Roger phone Charger type"},"last_changed":"2026-11-15T16:28:57.406786+00:00","last_reported":"2026-11-15T16:28:57.406786+00:00","last_updated":"2026-11-15T16:28:57.406786+00:00","context":{"id":"01M7G0MPNYH5EGCATAPD4PV6RR","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "native_value": "none",
+        "native_unit_of_measurement": null
+      },
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "cb2361391ee7a215a17a27a918945714"
+    },
+    {
+      "state": {"entity_id":"tts.google_translate_google_translate_en_com","state":"unknown","attributes":{"friendly_name":"google_translate Google Translate en com"},"last_changed":"2026-11-15T16:28:57.655069+00:00","last_reported":"2026-11-15T16:28:57.655069+00:00","last_updated":"2026-11-15T16:28:57.655069+00:00","context":{"id":"01M7G0MPXQB8QPHQTJWW47W2MC","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "12b37d4dc199dda6cbf244d50cdaba01"
+    },
+    {
+      "state": {"entity_id":"switch.farm_water_pump","state":"unknown","attributes":{"icon":"mdi:pump","friendly_name":"Farm Water Pump"},"last_changed":"2026-11-15T16:28:57.944914+00:00","last_reported":"2026-11-15T16:28:57.944914+00:00","last_updated":"2026-11-15T16:28:57.944914+00:00","context":{"id":"01M7G0MQ6RR5HWWDD0DY8E27VC","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "41eca17dcb77fe3e191dda176ec2bafa"
+    },
+    {
+      "state": {"entity_id":"binary_sensor.farm_motion_detection","state":"unknown","attributes":{"device_class":"motion","friendly_name":"Farm Motion Detection"},"last_changed":"2026-11-15T16:28:57.945001+00:00","last_reported":"2026-11-15T16:28:57.945001+00:00","last_updated":"2026-11-15T16:28:57.945001+00:00","context":{"id":"01M7G0MQ6SZBXC4FE7SKWDDQZT","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "64786f7b91f15d5ed002a857ed97e050"
+    },
+    {
+      "state": {"entity_id":"binary_sensor.farm_water_level","state":"unknown","attributes":{"device_class":"moisture","friendly_name":"Farm Water Level"},"last_changed":"2026-11-15T16:28:57.945035+00:00","last_reported":"2026-11-15T16:28:57.945035+00:00","last_updated":"2026-11-15T16:28:57.945035+00:00","context":{"id":"01M7G0MQ6SS9G9Z87SFHWD3YAS","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "63f6a6839eb8f6ab99ded7fe0078618c"
+    },
+    {
+      "state": {"entity_id":"binary_sensor.farm_light_level","state":"unknown","attributes":{"device_class":"light","friendly_name":"Farm Light Level"},"last_changed":"2026-11-15T16:28:57.945059+00:00","last_reported":"2026-11-15T16:28:57.945059+00:00","last_updated":"2026-11-15T16:28:57.945059+00:00","context":{"id":"01M7G0MQ6SQ5N2M8GN6ZT16Y8J","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "02413364489ab920b66819c3fe153a3c"
+    },
+    {
+      "state": {"entity_id":"sensor.farm_temperature","state":"unknown","attributes":{"state_class":"measurement","unit_of_measurement":"°C","device_class":"temperature","friendly_name":"Farm Temperature"},"last_changed":"2026-11-15T16:28:57.945115+00:00","last_reported":"2026-11-15T16:28:57.945115+00:00","last_updated":"2026-11-15T16:28:57.945115+00:00","context":{"id":"01M7G0MQ6SRE1CXYVYB4SHX4DN","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "native_value": null,
+        "native_unit_of_measurement": "°C"
+      },
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "dfc8c71c454209fb7cb936252c69a497"
+    },
+    {
+      "state": {"entity_id":"sensor.farm_soil_moisture","state":"unknown","attributes":{"state_class":"measurement","unit_of_measurement":"%","icon":"mdi:watering-can","friendly_name":"Farm Soil Moisture"},"last_changed":"2026-11-15T16:28:57.945179+00:00","last_reported":"2026-11-15T16:28:57.945179+00:00","last_updated":"2026-11-15T16:28:57.945179+00:00","context":{"id":"01M7G0MQ6SDH6NXA7FNTTS59QG","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "native_value": null,
+        "native_unit_of_measurement": "%"
+      },
+      "last_seen": "2026-11-15T16:28:58.001880+00:00",
+      "entity_registry_id": "9e1c55906bf5f0dc00a212e65bde2b0a"
+    },
+    {
+      "state": {"entity_id":"sensor.raspberry_pi_node_cpu_temperature","state":"unknown","attributes":{"state_class":"measurement","unit_of_measurement":"°F","device_class":"temperature","friendly_name":"Raspberry Pi Node CPU Temperature"},"last_changed":"2026-11-15T16:28:04.677309+00:00","last_reported":"2026-11-15T16:28:04.677309+00:00","last_updated":"2026-11-15T16:28:04.677309+00:00","context":{"id":"01M7G0K365YPW1FHCS1CBFFPR9","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "native_value": null,
+        "native_unit_of_measurement": "°C"
+      },
+      "last_seen": "2026-11-15T16:28:35.817626+00:00",
+      "entity_registry_id": "8777d830de853dd17740660e01d5abb0"
+    },
+    {
+      "state": {"entity_id":"sensor.raspberry_pi_node_cpu_usage","state":"unknown","attributes":{"state_class":"measurement","unit_of_measurement":"%","friendly_name":"Raspberry Pi Node CPU Usage"},"last_changed":"2026-11-15T16:28:04.680115+00:00","last_reported":"2026-11-15T16:28:04.680115+00:00","last_updated":"2026-11-15T16:28:04.680115+00:00","context":{"id":"01M7G0K368FX4FXXWWFF5WGTNB","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "native_value": null,
+        "native_unit_of_measurement": "%"
+      },
+      "last_seen": "2026-11-15T16:28:35.817626+00:00",
+      "entity_registry_id": "d5ea6cd6c40d14861b9bf69b51957356"
+    },
+    {
+      "state": {"entity_id":"sensor.raspberry_pi_node_disk_usage","state":"unknown","attributes":{"state_class":"measurement","unit_of_measurement":"%","friendly_name":"Raspberry Pi Node Disk Usage"},"last_changed":"2026-11-15T16:28:04.683466+00:00","last_reported":"2026-11-15T16:28:04.683466+00:00","last_updated":"2026-11-15T16:28:04.683466+00:00","context":{"id":"01M7G0K36B8JV8CWW867PPJT6K","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "native_value": null,
+        "native_unit_of_measurement": "%"
+      },
+      "last_seen": "2026-11-15T16:28:35.817626+00:00",
+      "entity_registry_id": "0c16f36afbb3a365c377f37c21d912af"
+    },
+    {
+      "state": {"entity_id":"switch.raspberry_pi_node_pi_relay_switch","state":"on","attributes":{"friendly_name":"Raspberry Pi Node Pi Relay Switch"},"last_changed":"2026-11-15T16:28:05.437454+00:00","last_reported":"2026-11-15T16:28:05.437454+00:00","last_updated":"2026-11-15T16:28:05.437454+00:00","context":{"id":"01M7G0K3XXWTD9DG82M9QPEQQ9","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-15T16:28:35.817626+00:00",
+      "entity_registry_id": "95e862c1646dfad9441cc3a9150b0ba7"
+    },
+    {
+      "state": {"entity_id":"automation.ir_sensor_motion_detected_alert","state":"on","attributes":{"id":"ir_motion_detected_alert","last_triggered":null,"mode":"single","current":0,"friendly_name":"IR Sensor: Motion Detected Alert"},"last_changed":"2026-11-13T01:55:03.620681+00:00","last_reported":"2026-11-13T01:55:03.620681+00:00","last_updated":"2026-11-13T01:55:03.620681+00:00","context":{"id":"01M799V3T4NFSFB4MQA4MA51J0","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-13T04:25:03.098083+00:00",
+      "entity_registry_id": "028054cfdc771b78e58bda3813765d1c"
+    },
+    {
+      "state": {"entity_id":"automation.high_temperature_warning","state":"on","attributes":{"id":"high_temperature_warning","last_triggered":null,"mode":"single","current":0,"friendly_name":"High Temperature Warning"},"last_changed":"2026-11-13T01:55:03.621011+00:00","last_reported":"2026-11-13T01:55:03.621011+00:00","last_updated":"2026-11-13T01:55:03.621011+00:00","context":{"id":"01M799V3T5AHR3Y9B4246N2ZZC","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2026-11-13T04:25:03.098083+00:00",
+      "entity_registry_id": "eae6c20e7455550178d5fc1a1d2d0dbf"
+    }
+  ]
+}

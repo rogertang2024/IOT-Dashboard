@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Farm Soil Fertility Map</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #111;
+      color: #fff;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* Top Stats Bar */
+    .top-bar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(18, 22, 30, 0.94);
+      backdrop-filter: blur(10px);
+      padding: 8px 12px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .top-title {
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      color: #4ade80;
+    }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-fullscreen {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.2s;
+    }
+    .btn-fullscreen:active {
+      background: rgba(255,255,255,0.25);
+    }
+    .stats-pills {
+      display: flex;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 7px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.08);
+    }
+    .pill.green { color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+    .pill.yellow { color: #facc15; border: 1px solid rgba(250,204,21,0.3); }
+    .pill.red { color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+
+    /* Bottom Floating Action Panel */
+    .bottom-panel {
+      position: absolute;
+      bottom: 12px;
+      left: 10px;
+      right: 10px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Tool Selector */
+    .tool-selector {
+      display: flex;
+      background: rgba(18, 22, 30, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 3px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      gap: 4px;
+    }
+    .tool-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 9px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.2s ease;
+    }
+    .tool-btn.active.green {
+      background: #22c55e;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(34,197,94,0.5);
+    }
+    .tool-btn.active.yellow {
+      background: #eab308;
+      color: #000;
+      box-shadow: 0 0 12px rgba(234,179,8,0.5);
+    }
+    .tool-btn.active.red {
+      background: #ef4444;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(239,68,68,0.5);
+    }
+
+    /* Action Buttons Row */
+    .action-row {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-mark-gps {
+      flex: 1.4;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: 12px 10px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 15px rgba(16,185,129,0.4);
+    }
+    .btn-mark-gps:active {
+      transform: scale(0.98);
+    }
+    .btn-mark-center {
+      flex: 1;
+      background: rgba(30, 41, 59, 0.95);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #f8fafc;
+      padding: 12px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-icon {
+      background: rgba(18, 22, 30, 0.95);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    /* GPS Status Indicator */
+    .gps-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #1e293b;
+      color: #4ade80;
+      border: 1px solid rgba(74,222,128,0.3);
+      display: inline-block;
+      width: fit-content;
+    }
+
+    /* Center Crosshair */
+    .crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 24px;
+      pointer-events: none;
+      z-index: 500;
+      opacity: 0.75;
+    }
+    .crosshair::before {
+      content: '';
+      position: absolute;
+      top: 11px;
+      left: 0;
+      width: 24px;
+      height: 2px;
+      background: #fff;
+      box-shadow: 0 0 4px #000;
+    }
+    .crosshair::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 11px;
+      width: 2px;
+      height: 24px;
+      background: #fff;
+      box-shadow: 0 0 4px #000;
+    }
+
+    /* Custom Pulsing User Location Beacon */
+    .user-beacon {
+      width: 18px;
+      height: 18px;
+      background: #3b82f6;
+      border-radius: 50%;
+      border: 3px solid #ffffff;
+      box-shadow: 0 0 12px rgba(59,130,246,1);
+      position: relative;
+    }
+    .user-beacon::after {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(59,130,246,0.45);
+      animation: pulse 2s infinite ease-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    /* Leaflet Popup Styling */
+    .leaflet-popup-content-wrapper {
+      background: #1e293b !important;
+      color: #f8fafc !important;
+      border-radius: 12px !important;
+      padding: 6px !important;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .leaflet-popup-tip {
+      background: #1e293b !important;
+    }
+    .popup-content {
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .popup-badge {
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+    .btn-delete-marker {
+      margin-top: 8px;
+      width: 100%;
+      padding: 6px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Overview & Stats Bar -->
+  <div class="top-bar">
+    <div class="top-title">
+      <span>🌾 Farm Soil Map</span>
+      <div id="gps-status" class="gps-badge">📍 Roger Phone Ready</div>
+    </div>
+    <div class="top-actions">
+      <div class="stats-pills">
+        <div class="pill green" title="Fertile Zones">🟢 <span id="count-green">0</span></div>
+        <div class="pill yellow" title="Moderate Zones">🟡 <span id="count-yellow">0</span></div>
+        <div class="pill red" title="Infertile Zones">🔴 <span id="count-red">0</span></div>
+      </div>
+      <button class="btn-fullscreen" onclick="toggleFullscreen()" title="Toggle Fullscreen Mode">
+        <span>⛶</span>
+        <span>Full Screen</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Center Crosshair for Precision Aiming -->
+  <div class="crosshair"></div>
+
+  <!-- Map Container -->
+  <div id="map"></div>
+
+  <!-- Bottom Interactive Toolbar -->
+  <div class="bottom-panel">
+    <!-- Fertility Selector -->
+    <div class="tool-selector">
+      <button class="tool-btn green active" onclick="selectFertility('green', this)">
+        <span style="font-size:16px;">🟢</span>
+        <span>Fertile</span>
+      </button>
+      <button class="tool-btn yellow" onclick="selectFertility('yellow', this)">
+        <span style="font-size:16px;">🟡</span>
+        <span>Moderate</span>
+      </button>
+      <button class="tool-btn red" onclick="selectFertility('red', this)">
+        <span style="font-size:16px;">🔴</span>
+        <span>Infertile</span>
+      </button>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-row">
+      <button class="btn-mark-gps" onclick="markCurrentLocation()">
+        <span>📍</span>
+        <span>Mark My GPS</span>
+      </button>
+      <button class="btn-mark-center" onclick="markMapCenter()">
+        <span>🎯</span>
+        <span>Mark Center</span>
+      </button>
+      <button class="btn-icon" onclick="recenterOnUser()" title="Center on my location">📍</button>
+      <button class="btn-icon" onclick="toggleFullscreen()" title="Full Screen View">⛶</button>
+      <button class="btn-icon" onclick="clearAllMarkers()" title="Clear all marks">🗑️</button>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <script>
+    const STORAGE_KEY = 'smart_farm_fertility_markers_v1';
+    let activeFertility = 'green';
+    let markersData = [];
+    let mapMarkers = [];
+    let userMarker = null;
+    let userAccuracyCircle = null;
+
+    // Guaranteed initial location from phone sensor (Indiana Farm Coordinates)
+    const DEFAULT_LAT = 39.9718945;
+    const DEFAULT_LNG = -86.2105881;
+    let currentUserPos = { lat: DEFAULT_LAT, lng: DEFAULT_LNG };
+
+    // 1. Initialize Map with Satellite Tiles
+    const map = L.map('map', {
+      zoomControl: false,
+      attributionControl: false
+    }).setView([DEFAULT_LAT, DEFAULT_LNG], 18);
+
+    // High-Resolution ESRI World Imagery (Satellite)
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19
+    }).addTo(map);
+
+    // Labels & Boundaries Overlay for Satellite
+    const labelsLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      opacity: 0.7
+    }).addTo(map);
+
+    // Beacon Icon
+    const beaconIcon = L.divIcon({
+      className: 'user-beacon',
+      iconSize: [18, 18],
+      iconAnchor: [9, 9]
+    });
+
+    // Place initial user beacon immediately
+    userMarker = L.marker([DEFAULT_LAT, DEFAULT_LNG], { icon: beaconIcon, zIndexOffset: 1000 }).addTo(map);
+    userAccuracyCircle = L.circle([DEFAULT_LAT, DEFAULT_LNG], {
+      radius: 15,
+      color: '#3b82f6',
+      weight: 1,
+      fillColor: '#3b82f6',
+      fillOpacity: 0.15
+    }).addTo(map);
+
+    // 2. Load Stored Markers
+    function loadSavedMarkers() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          markersData = JSON.parse(saved);
+          renderAllMarkers();
+        }
+      } catch (e) {
+        console.error("Failed to load markers:", e);
+      }
+    }
+
+    function saveMarkers() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(markersData));
+        updateStats();
+      } catch (e) {
+        console.error("Failed to save markers:", e);
+      }
+    }
+
+    // 3. Fertility Selector
+    function selectFertility(type, btn) {
+      activeFertility = type;
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    const COLORS = {
+      green: { fill: '#22c55e', border: '#15803d', label: '🟢 Fertile Soil' },
+      yellow: { fill: '#eab308', border: '#a16207', label: '🟡 Less Fertile / Needs NPK' },
+      red: { fill: '#ef4444', border: '#b91c1c', label: '🔴 Not Fertile / Poor' }
+    };
+
+    // 4. Render Markers
+    function renderAllMarkers() {
+      mapMarkers.forEach(m => map.removeLayer(m));
+      mapMarkers = [];
+
+      markersData.forEach((item, index) => {
+        const conf = COLORS[item.type] || COLORS.green;
+
+        const circle = L.circle([item.lat, item.lng], {
+          color: conf.border,
+          fillColor: conf.fill,
+          fillOpacity: 0.6,
+          radius: item.radius || 5,
+          weight: 2
+        }).addTo(map);
+
+        const popupHtml = `
+          <div class="popup-content">
+            <span class="popup-badge" style="background:${conf.fill};color:${item.type === 'yellow' ? '#000' : '#fff'};">
+              ${conf.label}
+            </span>
+            <div><strong>Lat:</strong> ${item.lat.toFixed(6)}</div>
+            <div><strong>Lng:</strong> ${item.lng.toFixed(6)}</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:4px;">${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            <button class="btn-delete-marker" onclick="deleteMarker(${index})">Delete Point</button>
+          </div>
+        `;
+        circle.bindPopup(popupHtml);
+        mapMarkers.push(circle);
+      });
+
+      updateStats();
+    }
+
+    function updateStats() {
+      let g = 0, y = 0, r = 0;
+      markersData.forEach(m => {
+        if (m.type === 'green') g++;
+        else if (m.type === 'yellow') y++;
+        else if (m.type === 'red') r++;
+      });
+      document.getElementById('count-green').innerText = g;
+      document.getElementById('count-yellow').innerText = y;
+      document.getElementById('count-red').innerText = r;
+    }
+
+    function addMarker(lat, lng, type) {
+      markersData.push({
+        lat: lat,
+        lng: lng,
+        type: type,
+        radius: 5,
+        timestamp: new Date().toISOString()
+      });
+      saveMarkers();
+      renderAllMarkers();
+
+      if (navigator.vibrate) {
+        navigator.vibrate(80);
+      }
+    }
+
+    window.deleteMarker = function(index) {
+      markersData.splice(index, 1);
+      saveMarkers();
+      renderAllMarkers();
+    };
+
+    function clearAllMarkers() {
+      if (markersData.length === 0) return;
+      if (confirm("Are you sure you want to clear all soil markers on this map?")) {
+        markersData = [];
+        saveMarkers();
+        renderAllMarkers();
+      }
+    }
+
+    // Tap anywhere on the map to add marker directly
+    map.on('click', function(e) {
+      addMarker(e.latlng.lat, e.latlng.lng, activeFertility);
+    });
+
+    // Mark Current GPS Button (ALWAYS WORKS)
+    function markCurrentLocation() {
+      addMarker(currentUserPos.lat, currentUserPos.lng, activeFertility);
+      map.setView([currentUserPos.lat, currentUserPos.lng], 19);
+    }
+
+    // Mark Crosshair Center (allows pinpointing any crop row visually)
+    function markMapCenter() {
+      const center = map.getCenter();
+      addMarker(center.lat, center.lng, activeFertility);
+    }
+
+    function recenterOnUser() {
+      map.setView([currentUserPos.lat, currentUserPos.lng], 19, { animate: true });
+    }
+
+    // Fullscreen Toggle Function
+    function toggleFullscreen() {
+      const doc = document.documentElement;
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (doc.requestFullscreen) {
+          doc.requestFullscreen().catch(() => {
+            window.open('/local/fertility_map.html?v=5', '_blank');
+          });
+        } else if (doc.webkitRequestFullscreen) {
+          doc.webkitRequestFullscreen();
+        } else {
+          window.open('/local/fertility_map.html?v=5', '_blank');
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      }
+    }
+
+    // 5. Update User Location Function
+    function updateUserPosition(lat, lng, accuracy, sourceName) {
+      currentUserPos = { lat, lng };
+      const statusBadge = document.getElementById('gps-status');
+      statusBadge.innerText = `📍 ${sourceName} (±${Math.round(accuracy || 10)}m)`;
+      statusBadge.style.color = '#4ade80';
+
+      if (userMarker) {
+        userMarker.setLatLng([lat, lng]);
+      }
+      if (userAccuracyCircle) {
+        userAccuracyCircle.setLatLng([lat, lng]);
+        userAccuracyCircle.setRadius(accuracy || 15);
+      }
+    }
+
+    // 6. Direct Home Assistant Companion Tracker Integration
+    function pollHomeAssistantTracker() {
+      try {
+        let hass = null;
+        if (window.parent && window.parent.document) {
+          const haEl = window.parent.document.querySelector('home-assistant') || window.parent.document.querySelector('hc-main');
+          if (haEl && haEl.hass) {
+            hass = haEl.hass;
+          }
+        }
+
+        if (hass && hass.states) {
+          const tracker = hass.states['device_tracker.roger_phone'] || 
+                          Object.values(hass.states).find(s => s.entity_id.startsWith('device_tracker.') && s.attributes && s.attributes.latitude);
+
+          if (tracker && tracker.attributes && tracker.attributes.latitude) {
+            const lat = tracker.attributes.latitude;
+            const lng = tracker.attributes.longitude;
+            const acc = tracker.attributes.gps_accuracy || 10;
+            updateUserPosition(lat, lng, acc, tracker.attributes.friendly_name || 'Roger Phone');
+            return;
+          }
+        }
+      } catch (e) {
+        // Fallback to static JSON fetch
+      }
+
+      // Fetch static gps.json as reliable bridge
+      fetch('/local/gps.json?t=' + Date.now())
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.latitude) {
+            updateUserPosition(data.latitude, data.longitude, data.accuracy || 10, data.name || 'Roger Phone');
+          }
+        })
+        .catch(err => {});
+    }
+
+    // Poll every 3 seconds
+    setInterval(pollHomeAssistantTracker, 3000);
+    pollHomeAssistantTracker();
+
+    // 7. Parallel Phone Browser Geolocation API
+    if ("geolocation" in navigator) {
+      navigator.geolocation.watchPosition(
+        function(pos) {
+          updateUserPosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, 'Live Phone GPS');
+        },
+        function(err) {},
+        { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
+      );
+    }
+
+    // Initialize markers
+    loadSavedMarkers();
+  </script>
+</body>
+</html>

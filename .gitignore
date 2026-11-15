@@ -1,0 +1,23 @@
+# Home Assistant config ignores
+config/.HA_RESTORE
+config/.ha_run.lock
+config/.cache/
+config/.storage/auth*
+config/.storage/onboarding
+config/*.log*
+config/*.db*
+config/home-assistant_v2.db*
+config/secrets.yaml
+
+# ESPHome secrets & builds
+esphome/secrets.yaml
+esphome/.esphome/
+
+# Cloned Home Assistant Core submodule & Python caches
+core/
+__pycache__/
+*.pyc
+
+# Mosquitto Broker storage
+mosquitto/data/
+mosquitto/log/

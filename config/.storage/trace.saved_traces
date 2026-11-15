@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "trace.saved_traces",
+  "data": {
+    "automation.farm_motion_detection_alert": [
+      {
+        "extended_dict": {
+          "last_step": "action/1",
+          "run_id": "83b9ab26bed0cc658a7c44b8c8225079",
+          "state": "stopped",
+          "script_execution": "finished",
+          "timestamp": {
+            "start": "2026-11-15T16:28:23.364533+00:00",
+            "finish": "2026-11-15T16:28:35.848612+00:00"
+          },
+          "domain": "automation",
+          "item_id": "farm_motion_detection_alert",
+          "trigger": "state of binary_sensor.farm_motion_detection",
+          "trace": {
+            "trigger/0": [
+              {
+                "path": "trigger/0",
+                "timestamp": "2026-11-15T16:28:23.364617+00:00",
+                "changed_variables": {
+                  "this": {
+                    "entity_id": "automation.farm_motion_alert",
+                    "state": "on",
+                    "attributes": {
+                      "id": "farm_motion_detection_alert",
+                      "last_triggered": "2026-11-15T16:27:33.390196+00:00",
+                      "mode": "single",
+                      "current": 0,
+                      "friendly_name": "Farm: Motion Alert"
+                    },
+                    "last_changed": "2026-11-15T16:28:03.653604+00:00",
+                    "last_reported": "2026-11-15T16:28:03.653604+00:00",
+                    "last_updated": "2026-11-15T16:28:03.653604+00:00",
+                    "context": {
+                      "id": "01M7G0K265MP18PP8SGFRG867S",
+                      "parent_id": null,
+                      "user_id": null
+                    }
+                  },
+                  "trigger": {
+                    "id": "0",
+                    "idx": "0",
+                    "alias": null,
+                    "platform": "state",
+                    "entity_id": "binary_sensor.farm_motion_detection",
+                    "from_state": {
+                      "entity_id": "binary_sensor.farm_motion_detection",
+                      "state": "off",
+                      "attributes": {
+                        "device_class": "motion",
+                        "friendly_name": "Farm Motion Detection"
+                      },
+                      "last_changed": "2026-11-15T16:28:08.576028+00:00",
+                      "last_reported": "2026-11-15T16:28:08.576028+00:00",
+                      "last_updated": "2026-11-15T16:28:08.576028+00:00",
+                      "context": {
+                        "id": "01M7G0K70067Q0XA2YZ243W2CR",
+                        "parent_id": null,
+                        "user_id": null
+                      }
+                    },
+                    "to_state": {
+                      "entity_id": "binary_sensor.farm_motion_detection",
+                      "state": "on",
+                      "attributes": {
+                        "device_class": "motion",
+                        "friendly_name": "Farm Motion Detection"
+                      },
+                      "last_changed": "2026-11-15T16:28:23.364400+00:00",
+                      "last_reported": "2026-11-15T16:28:23.364400+00:00",
+                      "last_updated": "2026-11-15T16:28:23.364400+00:00",
+                      "context": {
+                        "id": "01M7G0KNE4QXWNFVE5W0YGM77A",
+                        "parent_id": null,
+                        "user_id": null
+                      }
+                    },
+                    "for": null,
+                    "attribute": null,
+                    "description": "state of binary_sensor.farm_motion_detection"
+                  }
+                }
+              }
+            ],
+            "action/0": [
+              {
+                "path": "action/0",
+                "timestamp": "2026-11-15T16:28:23.364894+00:00",
+                "changed_variables": {
+                  "context": {
+                    "id": "01M7G0KNE48Q1TVAGTD6NZ1RH5",
+                    "parent_id": "01M7G0KNE4QXWNFVE5W0YGM77A",
+                    "user_id": null
+                  }
+                },
+                "result": {
+                  "params": {
+                    "domain": "persistent_notification",
+                    "service": "create",
+                    "service_data": {
+                      "title": "Farm Alert: Motion Detected",
+                      "message": "PIR motion sensor detected movement (human or animal) at 11:28:23. Check the Farm Camera stream.",
+                      "notification_id": "farm_motion_alert"
+                    },
+                    "target": {}
+                  },
+                  "running_script": false
+                }
+              }
+            ],
+            "action/1": [
+              {
+                "path": "action/1",
+                "timestamp": "2026-11-15T16:28:23.366362+00:00",
+                "result": {
+                  "delay": 30.0,
+                  "done": false
+                }
+              }
+            ]
+          },
+          "config": {
+            "id": "farm_motion_detection_alert",
+            "alias": "Farm: Motion Alert",
+            "description": "Notify when PIR sensor detects human or animal movement",
+            "trigger": [
+              {
+                "platform": "state",
+                "entity_id": "binary_sensor.farm_motion_detection",
+                "to": "on"
+              }
+            ],
+            "mode": "single",
+            "action": [
+              {
+                "action": "persistent_notification.create",
+                "data": {
+                  "title": "Farm Alert: Motion Detected",
+                  "message": "PIR motion sensor detected movement (human or animal) at {{ now().strftime(\"%H:%M:%S\") }}. Check the Farm Camera stream.",
+                  "notification_id": "farm_motion_alert"
+                }
+              },
+              {
+                "delay": "00:00:30"
+              }
+            ]
+          },
+          "blueprint_inputs": null,
+          "context": {
+            "id": "01M7G0KNE48Q1TVAGTD6NZ1RH5",
+            "parent_id": "01M7G0KNE4QXWNFVE5W0YGM77A",
+            "user_id": null
+          }
+        },
+        "short_dict": {
+          "last_step": "action/1",
+          "run_id": "83b9ab26bed0cc658a7c44b8c8225079",
+          "state": "stopped",
+          "script_execution": "finished",
+          "timestamp": {
+            "start": "2026-11-15T16:28:23.364533+00:00",
+            "finish": "2026-11-15T16:28:35.848612+00:00"
+          },
+          "domain": "automation",
+          "item_id": "farm_motion_detection_alert",
+          "trigger": "state of binary_sensor.farm_motion_detection"
+        }
+      }
+    ]
+  }
+}

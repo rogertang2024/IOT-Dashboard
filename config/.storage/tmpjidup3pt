@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "marketplace.common",
+  "data": {
+    "archived_repositories": [],
+    "renamed_repositories": {
+      "Constantini21/intelbras_dvr": "constantini-ha/intelbras_dvr",
+      "dellzhui/ha-birdie": "Birdie-Scandinavia-ApS/ha-birdie",
+      "Anonymouse0104/ha-brandweerrooster": "anonymouse-labs/ha-brandweerrooster",
+      "Kraken-Labz/octopus-media-card": "KoboLab/octopus-media-card",
+      "embersas/moisture-loop": "VicRaster/moisture-loop",
+      "Anonymouse0104/ha-rwm-afval": "anonymouse-labs/ha-rwm-afval",
+      "jasonmx/device-side": "DeviceSide/DeviceSide",
+      "Anonymouse0104/ha-workout-buddy": "anonymouse-labs/ha-workout-buddy",
+      "cloudbr34k84/home-assistant-pocketsmith": "cloudbr34k84/ha-pocketsmith",
+      "timosec/Satel-BeWave-Virtual-IP-Device": "timosec/BeWave",
+      "stevene1919/hisense_vidaa": "stevene1919/vidaa",
+      "bisman-automations/ha-appliance-live-activity": "bisman-automations/ha-appliance-mgmt"
+    },
+    "ignored_repositories": [],
+    "custom_repositories": []
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "core.analytics",
+  "data": {
+    "onboarded": true,
+    "preferences": {
+      "base": true,
+      "diagnostics": true,
+      "usage": true,
+      "statistics": true,
+      "snapshots": false
+    },
+    "uuid": "f4b3c054336b43df96f19fea08e6c42b",
+    "submission_identifier": null,
+    "snapshot_submission_time": null
+  }
+}

@@ -1,0 +1,73 @@
+esphome:
+  name: esp32-node
+  friendly_name: "ESP32 Sensor Node"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Logger for real-time serial & wireless logs
+logger:
+
+# Home Assistant Native API (enables automatic discovery)
+api:
+
+# Over-The-Air wireless firmware updates
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: "YOUR_WIFI_SSID"
+  password: "YOUR_WIFI_PASSWORD"
+
+  # Optional fallback hotspot if home WiFi is unreachable
+  ap:
+    ssid: "ESP32-Node-Fallback"
+    password: "fallbackpassword"
+
+  use_address: 192.168.1.251
+captive_portal:
+
+# ==========================================
+# 1. DHT11 Temperature & Humidity Sensor
+# ==========================================
+sensor:
+  - platform: dht
+    pin: GPIO4
+    model: DHT11
+    temperature:
+      name: "Room Temperature"
+      id: room_temperature
+    humidity:
+      name: "Room Humidity"
+      id: room_humidity
+    update_interval: 10s
+
+# ==========================================
+# 2. IR Sensor
+# ==========================================
+# If using a digital IR obstacle / motion module (e.g. KY-032 / FC-51):
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode:
+        input: true
+        pullup: true
+      inverted: true # Invert if LOW means motion detected
+    name: "IR Presence Detector"
+    id: ir_presence
+    device_class: motion
+
+# NOTE: If your IR sensor is an Infrared Remote Receiver (e.g., VS1838B)
+# to decode TV/AC remote buttons, uncomment the remote_receiver section below:
+# remote_receiver:
+#   pin:
+#     number: GPIO14
+#     inverted: true
+#   dump:
+#     - nec
+#     - rc5
+#     - sony
+
