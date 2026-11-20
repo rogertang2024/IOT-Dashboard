@@ -21,3 +21,6 @@ __pycache__/
 # Mosquitto Broker storage
 mosquitto/data/
 mosquitto/log/
+
+config/.storage/core.restore_state
+config/.storage/trace.saved_traces
