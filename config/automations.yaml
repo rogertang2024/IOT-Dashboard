@@ -1,13 +1,11 @@
 # 1. Intrusion Detection: Motion-Triggered Visual AI Scan
 - id: 'farm_motion_snapshot_and_scan'
   alias: 'Security: Motion-Triggered Camera Snapshot & Vision Scan'
-  description: 'Capture camera frame and request visual AI human detection on sustained motion'
+  description: 'Capture camera frame and request visual AI human detection on motion'
   trigger:
     - platform: state
       entity_id: binary_sensor.farm_motion_detection
       to: 'on'
-      for:
-        seconds: 3
   condition:
     - condition: state
       entity_id: alarm_control_panel.farm_security_system
