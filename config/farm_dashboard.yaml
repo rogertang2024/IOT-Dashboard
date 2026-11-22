@@ -133,6 +133,52 @@ views:
         show_name: true
         show_state: false
 
+      # Zone 5: Intruder Detection & Photograph Alert
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.farm_human_detected
+            state: "on"
+        card:
+          type: markdown
+          title: "🚨 INTRUDER ALERT — Visual AI Confirmed"
+          content: >
+            **Human presence confirmed by visual AI detection.**
+
+            ![Intruder Photograph](/local/intruder_alert.jpg?t={{ now().timestamp() | int }})
+
+            Confidence: {{ state_attr('binary_sensor.farm_human_detected', 'confidence') | float(0) * 100 | round(0) }}%
+            Detected at: {{ state_attr('binary_sensor.farm_human_detected', 'timestamp') }}
+
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.farm_human_detected
+            state: "off"
+        card:
+          type: markdown
+          title: "👁 Intruder Detection System"
+          content: >
+            ✅ **No human presence detected.**
+
+            Visual AI camera monitoring is active. Any confirmed intruder will be photographed and alerted here with a bounding box.
+
+      - type: glance
+        title: "🔒 Security Sensor Matrix"
+        entities:
+          - entity: binary_sensor.farm_human_detected
+            name: Human Detected
+            icon: mdi:account-alert
+          - entity: binary_sensor.farm_motion_detection
+            name: Motion PIR
+            icon: mdi:motion-sensor
+          - entity: binary_sensor.farm_node_connectivity
+            name: ESP32 Node
+            icon: mdi:lan-connect
+          - entity: switch.farm_alarm_siren
+            name: Siren (GPIO 23)
+            icon: mdi:bullhorn
+
       - type: entity
         entity: binary_sensor.farm_motion_detection
         name: Farm PIR Motion & Wildlife Activity
