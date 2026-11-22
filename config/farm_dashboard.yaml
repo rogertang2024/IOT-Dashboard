@@ -134,6 +134,13 @@ views:
         show_state: false
 
       # Zone 5: Intruder Detection & Photograph Alert
+      - type: picture
+        title: "📸 Latest Intruder Snapshot & AI Verification"
+        image: /local/intruder_alert.jpg
+        tap_action:
+          action: url
+          url_path: /local/intruder_alert.jpg
+
       - type: conditional
         conditions:
           - condition: state
@@ -141,14 +148,11 @@ views:
             state: "on"
         card:
           type: markdown
-          title: "🚨 INTRUDER ALERT — Visual AI Confirmed"
+          title: "🚨 INTRUDER ALERT — Active Alarm"
           content: >
-            **Human presence confirmed by visual AI detection.**
+            **Visual AI confirmed human presence at {{ state_attr('binary_sensor.farm_human_detected', 'timestamp') }}!**
 
-            ![Intruder Photograph](/local/intruder_alert.jpg?t={{ now().timestamp() | int }})
-
-            Confidence: {{ state_attr('binary_sensor.farm_human_detected', 'confidence') | float(0) * 100 | round(0) }}%
-            Detected at: {{ state_attr('binary_sensor.farm_human_detected', 'timestamp') }}
+            Confidence: {{ state_attr('binary_sensor.farm_human_detected', 'confidence') | float(0) * 100 | round(0) }}% | Physical Siren: ACTIVE
 
       - type: conditional
         conditions:

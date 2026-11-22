@@ -1,207 +1,216 @@
 {
-  "version": 1,
-  "minor_version": 1,
-  "key": "lovelace",
-  "data": {
-    "config": {
-      "title": "Smart Farm Operations",
-      "views": [
-        {
-          "title": "Farm Overview",
-          "path": "default_view",
-          "badges": [],
-          "cards": [
-            {
-              "type": "iframe",
-              "title": "🌾 Farm Soil Fertility & Field Mapping",
-              "url": "/local/fertility_map.html?v=5",
-              "aspect_ratio": "65%"
-            },
-            {
-              "type": "alarm-panel",
-              "entity": "alarm_control_panel.farm_security_system",
-              "name": "🛡️ Farm Security Keypad (PIN: 1234)",
-              "states": [
-                "arm_home",
-                "arm_away"
-              ]
-            },
-            {
-              "type": "entities",
-              "title": "🛡️ Security & Health Status Matrix",
-              "show_header_toggle": false,
-              "entities": [
+    "version": 1,
+    "minor_version": 1,
+    "key": "lovelace",
+    "data": {
+        "config": {
+            "title": "Smart Farm Operations",
+            "views": [
                 {
-                  "entity": "sensor.farm_security_health_status",
-                  "name": "System Security Status"
-                },
-                {
-                  "entity": "binary_sensor.farm_node_connectivity",
-                  "name": "ESP32 Hardware Link"
-                },
-                {
-                  "entity": "switch.farm_alarm_siren",
-                  "name": "GPIO 23 Siren Buzzer"
-                },
-                {
-                  "entity": "binary_sensor.farm_pump_dry_run_risk",
-                  "name": "Pump Dry-Run Risk"
-                },
-                {
-                  "entity": "binary_sensor.farm_freeze_risk",
-                  "name": "Frost / Freeze Hazard"
+                    "title": "Farm Overview",
+                    "path": "default_view",
+                    "badges": [],
+                    "cards": [
+                        {
+                            "type": "iframe",
+                            "title": "\ud83c\udf3e Farm Soil Fertility & Field Mapping",
+                            "url": "/local/fertility_map.html?v=5",
+                            "aspect_ratio": "65%"
+                        },
+                        {
+                            "type": "alarm-panel",
+                            "entity": "alarm_control_panel.farm_security_system",
+                            "name": "\ud83d\udee1\ufe0f Farm Security Keypad (PIN: 1234)",
+                            "states": [
+                                "arm_home",
+                                "arm_away"
+                            ]
+                        },
+                        {
+                            "type": "entities",
+                            "title": "\ud83d\udee1\ufe0f Security & Health Status Matrix",
+                            "show_header_toggle": false,
+                            "entities": [
+                                {
+                                    "entity": "sensor.farm_security_health_status",
+                                    "name": "System Security Status"
+                                },
+                                {
+                                    "entity": "binary_sensor.farm_node_connectivity",
+                                    "name": "ESP32 Hardware Link"
+                                },
+                                {
+                                    "entity": "switch.farm_alarm_siren",
+                                    "name": "GPIO 23 Siren Buzzer"
+                                },
+                                {
+                                    "entity": "binary_sensor.farm_pump_dry_run_risk",
+                                    "name": "Pump Dry-Run Risk"
+                                },
+                                {
+                                    "entity": "binary_sensor.farm_freeze_risk",
+                                    "name": "Frost / Freeze Hazard"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "weather-forecast",
+                            "entity": "weather.home",
+                            "name": "\ud83c\udf26\ufe0f Farm Microclimate Forecast",
+                            "show_current": true,
+                            "show_forecast": true,
+                            "forecast_type": "daily"
+                        },
+                        {
+                            "type": "horizontal-stack",
+                            "cards": [
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.farm_air_quality_index",
+                                    "name": "Air Quality (AQI)",
+                                    "min": 0,
+                                    "max": 200,
+                                    "severity": {
+                                        "green": 0,
+                                        "yellow": 50,
+                                        "red": 100
+                                    }
+                                },
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.farm_barometric_pressure",
+                                    "name": "Barometric Pressure",
+                                    "needle": true
+                                },
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.farm_pm2_5",
+                                    "name": "PM2.5 Dust",
+                                    "min": 0,
+                                    "max": 80,
+                                    "severity": {
+                                        "green": 0,
+                                        "yellow": 35,
+                                        "red": 55
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "entities",
+                            "title": "\ud83d\udca7 Soil & Irrigation Station",
+                            "show_header_toggle": false,
+                            "entities": [
+                                {
+                                    "entity": "switch.farm_water_pump",
+                                    "name": "Water Pump Relay"
+                                },
+                                {
+                                    "entity": "sensor.farm_soil_moisture",
+                                    "name": "Soil Moisture"
+                                },
+                                {
+                                    "entity": "sensor.farm_temperature",
+                                    "name": "Soil / Ambient Temperature"
+                                },
+                                {
+                                    "entity": "binary_sensor.farm_water_level",
+                                    "name": "Water Reservoir Level"
+                                },
+                                {
+                                    "entity": "binary_sensor.farm_light_level",
+                                    "name": "Sunlight Intensity (LDR)"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "horizontal-stack",
+                            "cards": [
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.farm_soil_moisture",
+                                    "name": "Soil Moisture",
+                                    "min": 0,
+                                    "max": 100,
+                                    "severity": {
+                                        "red": 20,
+                                        "yellow": 40,
+                                        "green": 60
+                                    }
+                                },
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.farm_temperature",
+                                    "name": "Temperature",
+                                    "min": 0,
+                                    "max": 50,
+                                    "severity": {
+                                        "green": 18,
+                                        "yellow": 28,
+                                        "red": 35
+                                    }
+                                },
+                                {
+                                    "type": "button",
+                                    "entity": "switch.farm_water_pump",
+                                    "name": "Toggle Pump",
+                                    "show_state": true,
+                                    "icon": "mdi:pump",
+                                    "tap_action": {
+                                        "action": "toggle"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "history-graph",
+                            "title": "\ud83d\udcc8 24-Hour Telemetry & Environmental Trends",
+                            "hours_to_show": 24,
+                            "entities": [
+                                {
+                                    "entity": "sensor.farm_soil_moisture",
+                                    "name": "Soil Moisture (%)"
+                                },
+                                {
+                                    "entity": "sensor.farm_temperature",
+                                    "name": "Temperature"
+                                },
+                                {
+                                    "entity": "sensor.farm_barometric_pressure",
+                                    "name": "Barometric Pressure"
+                                },
+                                {
+                                    "entity": "sensor.farm_air_quality_index",
+                                    "name": "Air Quality (AQI)"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "picture-entity",
+                            "title": "\ud83d\udcf9 Raspberry Pi Farm & Wildlife Camera",
+                            "entity": "camera.camera",
+                            "camera_view": "live",
+                            "show_name": true,
+                            "show_state": false
+                        },
+                        {
+                            "type": "entity",
+                            "entity": "binary_sensor.farm_motion_detection",
+                            "name": "Farm PIR Motion & Wildlife Activity",
+                            "icon": "mdi:motion-sensor"
+                        },
+                        {
+                            "type": "picture",
+                            "title": "\ud83d\udcf8 Latest Intruder Snapshot & AI Verification",
+                            "image": "/local/intruder_alert.jpg",
+                            "tap_action": {
+                                "action": "url",
+                                "url_path": "/local/intruder_alert.jpg"
+                            }
+                        }
+                    ]
                 }
-              ]
-            },
-            {
-              "type": "weather-forecast",
-              "entity": "weather.home",
-              "name": "🌦️ Farm Microclimate Forecast",
-              "show_current": true,
-              "show_forecast": true,
-              "forecast_type": "daily"
-            },
-            {
-              "type": "horizontal-stack",
-              "cards": [
-                {
-                  "type": "gauge",
-                  "entity": "sensor.farm_air_quality_index",
-                  "name": "Air Quality (AQI)",
-                  "min": 0,
-                  "max": 200,
-                  "severity": {
-                    "green": 0,
-                    "yellow": 50,
-                    "red": 100
-                  }
-                },
-                {
-                  "type": "gauge",
-                  "entity": "sensor.farm_barometric_pressure",
-                  "name": "Barometric Pressure",
-                  "needle": true
-                },
-                {
-                  "type": "gauge",
-                  "entity": "sensor.farm_pm2_5",
-                  "name": "PM2.5 Dust",
-                  "min": 0,
-                  "max": 80,
-                  "severity": {
-                    "green": 0,
-                    "yellow": 35,
-                    "red": 55
-                  }
-                }
-              ]
-            },
-            {
-              "type": "entities",
-              "title": "💧 Soil & Irrigation Station",
-              "show_header_toggle": false,
-              "entities": [
-                {
-                  "entity": "switch.farm_water_pump",
-                  "name": "Water Pump Relay"
-                },
-                {
-                  "entity": "sensor.farm_soil_moisture",
-                  "name": "Soil Moisture"
-                },
-                {
-                  "entity": "sensor.farm_temperature",
-                  "name": "Soil / Ambient Temperature"
-                },
-                {
-                  "entity": "binary_sensor.farm_water_level",
-                  "name": "Water Reservoir Level"
-                },
-                {
-                  "entity": "binary_sensor.farm_light_level",
-                  "name": "Sunlight Intensity (LDR)"
-                }
-              ]
-            },
-            {
-              "type": "horizontal-stack",
-              "cards": [
-                {
-                  "type": "gauge",
-                  "entity": "sensor.farm_soil_moisture",
-                  "name": "Soil Moisture",
-                  "min": 0,
-                  "max": 100,
-                  "severity": {
-                    "red": 20,
-                    "yellow": 40,
-                    "green": 60
-                  }
-                },
-                {
-                  "type": "gauge",
-                  "entity": "sensor.farm_temperature",
-                  "name": "Temperature",
-                  "min": 0,
-                  "max": 50,
-                  "severity": {
-                    "green": 18,
-                    "yellow": 28,
-                    "red": 35
-                  }
-                },
-                {
-                  "type": "button",
-                  "entity": "switch.farm_water_pump",
-                  "name": "Toggle Pump",
-                  "show_state": true,
-                  "icon": "mdi:pump",
-                  "tap_action": {
-                    "action": "toggle"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "history-graph",
-              "title": "📈 24-Hour Telemetry & Environmental Trends",
-              "hours_to_show": 24,
-              "entities": [
-                {
-                  "entity": "sensor.farm_soil_moisture",
-                  "name": "Soil Moisture (%)"
-                },
-                {
-                  "entity": "sensor.farm_temperature",
-                  "name": "Temperature"
-                },
-                {
-                  "entity": "sensor.farm_barometric_pressure",
-                  "name": "Barometric Pressure"
-                },
-                {
-                  "entity": "sensor.farm_air_quality_index",
-                  "name": "Air Quality (AQI)"
-                }
-              ]
-            },
-            {
-              "type": "picture-entity",
-              "title": "📹 Raspberry Pi Farm & Wildlife Camera",
-              "entity": "camera.camera",
-              "camera_view": "live",
-              "show_name": true,
-              "show_state": false
-            },
-            {
-              "type": "entity",
-              "entity": "binary_sensor.farm_motion_detection",
-              "name": "Farm PIR Motion & Wildlife Activity",
-              "icon": "mdi:motion-sensor"
-            }
-          ]
+            ]
         }
-      ]
     }
-  }
 }

@@ -43,7 +43,14 @@
     - action: persistent_notification.create
       data:
         title: '🚨 INTRUDER CONFIRMED: Visual Verification'
-        message: 'Visual AI confirmed human presence at {{ now().strftime("%H:%M:%S") }}! Audio siren activated. [View Photograph](/local/intruder_alert.jpg)'
+        message: >
+          Visual AI confirmed human presence at {{ now().strftime("%H:%M:%S") }}! Audio siren activated.
+
+
+          ![Intruder Photograph](/local/intruder_alert.jpg)
+
+
+          <a href="/local/intruder_alert.jpg" target="_blank">🔗 Open High-Resolution Photograph</a>
         notification_id: 'farm_security_alert'
 
 # 2. Equipment Safety: Autonomous Dry-Run Emergency Interlock
