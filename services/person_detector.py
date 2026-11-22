@@ -21,6 +21,8 @@ class PersonDetector:
     def __init__(self):
         self.hog = cv2.HOGDescriptor()
         self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        self.upper_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_upperbody.xml')
 
     def _sigmoid(self, x):
         """Normalize raw SVM distance to 0.0 - 1.0 probability."""
@@ -31,75 +33,99 @@ class PersonDetector:
 
     def detect(self, image_input, confidence_threshold=0.50):
         """
-        Detect people in an image file or numpy array.
-        Returns: (detected: bool, max_confidence: float, boxes: list of (x, y, w, h))
+        Detect people/faces in an image file or numpy array.
+        Tests both standard orientation and 180-degree rotation (for inverted cameras).
+        Returns: (detected: bool, max_confidence: float, boxes: list of (x, y, w, h), best_image: np.ndarray)
         """
         if isinstance(image_input, str):
             if not os.path.exists(image_input):
-                return False, 0.0, []
+                return False, 0.0, [], None
             img = cv2.imread(image_input)
             if img is None:
-                return False, 0.0, []
+                return False, 0.0, [], None
         elif isinstance(image_input, np.ndarray):
             img = image_input
         else:
-            return False, 0.0, []
+            return False, 0.0, [], None
 
-        # Resize for faster, consistent HOG detection if very large
-        h, w = img.shape[:2]
-        scale = 1.0
-        if w > 800:
-            scale = 800.0 / w
-            img_resized = cv2.resize(img, (800, int(h * scale)))
-        else:
-            img_resized = img
+        # Test both normal orientation and 180-degree rotated orientation
+        orientations = [
+            ("normal", img),
+            ("rotated_180", cv2.rotate(img, cv2.ROTATE_180))
+        ]
 
-        try:
-            # detectMultiScale returns bounding boxes and SVM weights
-            boxes, weights = self.hog.detectMultiScale(
-                img_resized,
-                winStride=(8, 8),
-                padding=(16, 16),
-                scale=1.05,
-                hitThreshold=0.0
-            )
-        except Exception as e:
-            print(f"[PersonDetector] HOG detection error: {e}", flush=True)
-            return False, 0.0, []
+        best_detected = False
+        best_conf = 0.0
+        best_boxes = []
+        best_img = img
 
-        valid_boxes = []
-        max_conf = 0.0
+        for orient_name, current_img in orientations:
+            gray = cv2.cvtColor(current_img, cv2.COLOR_BGR2GRAY)
+            current_boxes = []
+            current_conf = 0.0
 
-        for i, box in enumerate(boxes):
-            weight = weights[i] if i < len(weights) else 0.0
-            # Weight is a numpy array or float
-            if isinstance(weight, (list, np.ndarray)):
-                weight_val = float(weight[0])
+            # 1. Face Detection (Haar Cascade)
+            faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3, minSize=(35, 35))
+            for (fx, fy, fw, fh) in faces:
+                current_boxes.append((int(fx), int(fy), int(fw), int(fh)))
+                if 0.95 > current_conf:
+                    current_conf = 0.95
+
+            # 2. Upper Body Detection (Haar Cascade)
+            uppers = self.upper_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3, minSize=(50, 50))
+            for (ux, uy, uw, uh) in uppers:
+                current_boxes.append((int(ux), int(uy), int(uw), int(uh)))
+                if 0.85 > current_conf:
+                    current_conf = 0.85
+
+            # 3. Full Body HOG Detection
+            h, w = current_img.shape[:2]
+            scale = 1.0
+            if w > 800:
+                scale = 800.0 / w
+                img_resized = cv2.resize(current_img, (800, int(h * scale)))
             else:
-                weight_val = float(weight)
+                img_resized = current_img
 
-            conf = self._sigmoid(weight_val)
-            if conf >= confidence_threshold:
-                # Scale box back to original coordinates
-                orig_box = (
-                    int(box[0] / scale),
-                    int(box[1] / scale),
-                    int(box[2] / scale),
-                    int(box[3] / scale)
+            try:
+                hog_boxes, weights = self.hog.detectMultiScale(
+                    img_resized,
+                    winStride=(8, 8),
+                    padding=(16, 16),
+                    scale=1.05,
+                    hitThreshold=0.0
                 )
-                valid_boxes.append(orig_box)
-                if conf > max_conf:
-                    max_conf = conf
+                for i, box in enumerate(hog_boxes):
+                    weight = weights[i] if i < len(weights) else 0.0
+                    weight_val = float(weight[0]) if isinstance(weight, (list, np.ndarray)) else float(weight)
+                    conf = self._sigmoid(weight_val)
+                    if conf >= confidence_threshold:
+                        orig_box = (
+                            int(box[0] / scale),
+                            int(box[1] / scale),
+                            int(box[2] / scale),
+                            int(box[3] / scale)
+                        )
+                        current_boxes.append(orig_box)
+                        if conf > current_conf:
+                            current_conf = conf
+            except Exception as e:
+                print(f"[PersonDetector] HOG detection error: {e}", flush=True)
 
-        detected = len(valid_boxes) > 0
-        return detected, round(max_conf, 2), valid_boxes
+            if len(current_boxes) > 0 and current_conf > best_conf:
+                best_detected = True
+                best_conf = current_conf
+                best_boxes = current_boxes
+                best_img = current_img
 
-    def annotate_and_save(self, src_path_or_img, dest_path, boxes, confidence):
+        return best_detected, round(best_conf, 2), best_boxes, best_img
+
+    def annotate_and_save(self, image_to_save, dest_path, boxes, confidence):
         """Draw bounding boxes and timestamp header on image and save to dest_path."""
-        if isinstance(src_path_or_img, str):
-            img = cv2.imread(src_path_or_img)
+        if isinstance(image_to_save, str):
+            img = cv2.imread(image_to_save)
         else:
-            img = src_path_or_img.copy()
+            img = image_to_save.copy()
 
         if img is None:
             return False
@@ -121,19 +147,19 @@ class PersonDetector:
             cv2.rectangle(img, (x, y), (x + bw, y + bh), (0, 0, 255), 2)
             label = f"Person: {int(confidence * 100)}%"
             (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-            cv2.rectangle(img, (x, y - th - 6), (x + tw + 6, y), (0, 0, 255), -1)
-            cv2.putText(img, label, (x + 3, y - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            cv2.rectangle(img, (x, max(0, y - th - 6)), (x + tw + 6, max(th + 6, y)), (0, 0, 255), -1)
+            cv2.putText(img, label, (x + 3, max(th + 2, y - 4)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
         os.makedirs(os.path.dirname(os.path.abspath(dest_path)), exist_ok=True)
         return cv2.imwrite(dest_path, img)
 
     def process_snapshot(self, snapshot_path, alert_output_path, confidence_threshold=0.50):
         """Analyze snapshot and output annotated alert image if intruder detected."""
-        detected, conf, boxes = self.detect(snapshot_path, confidence_threshold)
+        detected, conf, boxes, best_img = self.detect(snapshot_path, confidence_threshold)
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        if detected:
-            self.annotate_and_save(snapshot_path, alert_output_path, boxes, conf)
+        if detected and best_img is not None:
+            self.annotate_and_save(best_img, alert_output_path, boxes, conf)
             return {
                 "state": "ON",
                 "confidence": conf,
@@ -152,8 +178,9 @@ def run_mqtt_daemon():
     """Run as a standalone background MQTT daemon."""
     import paho.mqtt.client as mqtt
 
-    SNAPSHOT_FILE = os.path.abspath("config/www/security_snapshot.jpg")
-    ALERT_FILE = os.path.abspath("config/www/intruder_alert.jpg")
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    SNAPSHOT_FILE = os.path.join(BASE_DIR, "config", "www", "security_snapshot.jpg")
+    ALERT_FILE = os.path.join(BASE_DIR, "config", "www", "intruder_alert.jpg")
     MQTT_BROKER = "localhost"
     MQTT_PORT = 1883
     TOPIC_REQUEST = "farm/security/scan_request"
