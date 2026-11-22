@@ -7,12 +7,8 @@
       entity_id: binary_sensor.farm_motion_detection
       to: 'on'
   condition:
-    - condition: state
-      entity_id: alarm_control_panel.farm_security_system
-      state:
-        - 'armed_away'
-        - 'armed_home'
-        - 'arming'
+    - condition: template
+      value_template: "{{ states('alarm_control_panel.farm_security_system') != 'disarmed' }}"
   mode: single
   action:
     - action: camera.snapshot
