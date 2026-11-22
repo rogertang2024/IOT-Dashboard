@@ -104,6 +104,7 @@ mqtt:
       command_topic: "farm/alarm/siren"
       payload_on: "ON"
       payload_off: "OFF"
+      optimistic: true
       icon: "mdi:bullhorn"
       unique_id: "farm_alarm_siren"
 

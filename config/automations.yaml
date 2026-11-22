@@ -1,7 +1,7 @@
-# 1. Intrusion Alarm: 3-Second Temporal Filter (Suppresses False Positives)
-- id: 'farm_intrusion_confirmed_alert'
-  alias: 'Security: Confirmed Perimeter Intrusion'
-  description: 'Trigger alarm when motion sustains for >= 3 seconds while Armed Away'
+# 1. Intrusion Detection: Motion-Triggered Visual AI Scan
+- id: 'farm_motion_snapshot_and_scan'
+  alias: 'Security: Motion-Triggered Camera Snapshot & Vision Scan'
+  description: 'Capture camera frame and request visual AI human detection on sustained motion'
   trigger:
     - platform: state
       entity_id: binary_sensor.farm_motion_detection
@@ -11,7 +11,29 @@
   condition:
     - condition: state
       entity_id: alarm_control_panel.farm_security_system
-      state: 'armed_away'
+      state:
+        - 'armed_away'
+        - 'armed_home'
+  mode: single
+  action:
+    - action: camera.snapshot
+      target:
+        entity_id: camera.camera
+      data:
+        filename: '/config/www/security_snapshot.jpg'
+    - action: mqtt.publish
+      data:
+        topic: 'farm/security/scan_request'
+        payload: '1'
+
+# 1B. Confirmed Human Intruder Escalation (Visual AI Verified)
+- id: 'farm_human_intruder_confirmed_alert'
+  alias: 'Security: Confirmed Human Intruder Escalation'
+  description: 'Trigger siren, trip alarm, and notify with photograph when visual AI detects a human'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.farm_human_detected
+      to: 'on'
   mode: single
   action:
     - action: alarm_control_panel.alarm_trigger
@@ -20,15 +42,10 @@
     - action: switch.turn_on
       target:
         entity_id: switch.farm_alarm_siren
-    - action: camera.snapshot
-      target:
-        entity_id: camera.camera
-      data:
-        filename: '/config/www/security_snapshot.jpg'
     - action: persistent_notification.create
       data:
-        title: '🚨 SECURITY ALERT: Confirmed Intrusion'
-        message: 'Perimeter motion sustained for >= 3 seconds at {{ now().strftime("%H:%M:%S") }}. Siren activated and camera frame captured.'
+        title: '🚨 INTRUDER CONFIRMED: Visual Verification'
+        message: 'Visual AI confirmed human presence at {{ now().strftime("%H:%M:%S") }}! Audio siren activated. [View Photograph](/local/intruder_alert.jpg)'
         notification_id: 'farm_security_alert'
 
 # 2. Equipment Safety: Autonomous Dry-Run Emergency Interlock
@@ -78,7 +95,7 @@
 # 4. Alarm Siren Silence on Disarm (PIN Verified)
 - id: 'farm_alarm_disarmed_silence'
   alias: 'Security: Silence Siren on Disarm'
-  description: 'Shut off siren and clear alert when system is disarmed with PIN'
+  description: 'Shut off siren, clear alert, and reset human detection when system is disarmed with PIN'
   trigger:
     - platform: state
       entity_id: alarm_control_panel.farm_security_system
@@ -87,6 +104,11 @@
     - action: switch.turn_off
       target:
         entity_id: switch.farm_alarm_siren
+    - action: mqtt.publish
+      data:
+        topic: 'farm/security/human_detected'
+        payload: '{"state": "OFF", "confidence": 0.0, "timestamp": ""}'
+        retain: true
     - action: persistent_notification.dismiss
       data:
         notification_id: 'farm_security_alert'
@@ -124,3 +146,36 @@
     - action: persistent_notification.dismiss
       data:
         notification_id: 'farm_offline_alert'
+
+# 7. Security: Remote Arm / Disarm via MQTT
+- id: 'farm_security_mqtt_arm_control'
+  alias: 'Security: Remote Arm and Disarm via MQTT'
+  description: 'Allow secure arming and disarming via MQTT command topic'
+  trigger:
+    - platform: mqtt
+      topic: 'farm/alarm/set'
+  action:
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.payload == 'ARM_AWAY' }}"
+          sequence:
+            - action: alarm_control_panel.alarm_arm_away
+              target:
+                entity_id: alarm_control_panel.farm_security_system
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.payload == 'ARM_HOME' }}"
+          sequence:
+            - action: alarm_control_panel.alarm_arm_home
+              target:
+                entity_id: alarm_control_panel.farm_security_system
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.payload == 'DISARM' }}"
+          sequence:
+            - action: alarm_control_panel.alarm_disarm
+              target:
+                entity_id: alarm_control_panel.farm_security_system
+              data:
+                code: '1234'
