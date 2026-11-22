@@ -80,6 +80,16 @@ mqtt:
       device_class: "connectivity"
       unique_id: "farm_node_connectivity"
 
+    - name: "Farm Human Detected"
+      state_topic: "farm/security/human_detected"
+      value_template: "{{ value_json.state }}"
+      json_attributes_topic: "farm/security/human_detected"
+      payload_on: "ON"
+      payload_off: "OFF"
+      device_class: "safety"
+      icon: "mdi:account-alert"
+      unique_id: "farm_human_detected"
+
   switch:
     - name: "Farm Water Pump"
       state_topic: "farm/pump/state"
