@@ -25,14 +25,17 @@ alarm_control_panel:
     name: Farm Security System
     code: "1234"
     code_arm_required: false
-    delay_time: 30
+    arming_time: 0
+    delay_time: 0
     trigger_time: 300
     disarmed:
       trigger_time: 0
     armed_home:
+      arming_time: 0
       delay_time: 0
     armed_away:
-      delay_time: 30
+      arming_time: 0
+      delay_time: 0
 
 # MQTT Smart Farm Entities
 mqtt:

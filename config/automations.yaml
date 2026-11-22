@@ -12,6 +12,7 @@
       state:
         - 'armed_away'
         - 'armed_home'
+        - 'arming'
   mode: single
   action:
     - action: camera.snapshot
