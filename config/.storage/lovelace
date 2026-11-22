@@ -200,13 +200,9 @@
                             "icon": "mdi:motion-sensor"
                         },
                         {
-                            "type": "picture",
-                            "title": "\ud83d\udcf8 Latest Intruder Snapshot & AI Verification",
-                            "image": "/local/intruder_alert.jpg",
-                            "tap_action": {
-                                "action": "url",
-                                "url_path": "/local/intruder_alert.jpg"
-                            }
+                            "type": "markdown",
+                            "title": "\ud83d\udcf8 Latest Intruder Snapshot (Verified AI)",
+                            "content": "<img src=\"/local/intruder_alert.jpg?t={{ as_timestamp(now()) }}\" style=\"width:100%; border-radius: 8px; border: 2px solid #e53935;\" />"
                         }
                     ]
                 }

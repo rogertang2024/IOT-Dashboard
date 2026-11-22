@@ -37,6 +37,9 @@
     - action: switch.turn_on
       target:
         entity_id: switch.farm_alarm_siren
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: 'farm_security_alert'
     - action: persistent_notification.create
       data:
         title: '🚨 INTRUDER CONFIRMED: Visual Verification'
@@ -44,11 +47,11 @@
           Visual AI confirmed human presence at {{ now().strftime("%H:%M:%S") }}! Audio siren activated.
 
 
-          ![Intruder Photograph](/local/intruder_alert.jpg)
+          ![Intruder Photograph](/local/intruder_alert.jpg?t={{ as_timestamp(now()) | int }})
 
 
-          <a href="/local/intruder_alert.jpg" target="_blank">🔗 Open High-Resolution Photograph</a>
-        notification_id: 'farm_security_alert'
+          [🔗 Open High-Resolution Photograph](/local/intruder_alert.jpg?t={{ as_timestamp(now()) | int }})
+        notification_id: 'farm_security_alert_{{ now().strftime("%Y%m%d_%H%M%S") }}'
 
 # 2. Equipment Safety: Autonomous Dry-Run Emergency Interlock
 - id: 'farm_pump_dry_run_interlock'

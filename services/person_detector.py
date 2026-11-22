@@ -192,7 +192,7 @@ def run_mqtt_daemon():
     except (AttributeError, TypeError):
         client = mqtt.Client(client_id="person_detector_daemon")
 
-    last_processed_mtime = 0
+    last_processed_mtime = os.path.getmtime(SNAPSHOT_FILE) if os.path.exists(SNAPSHOT_FILE) else 0
 
     def process_and_publish():
         nonlocal last_processed_mtime
