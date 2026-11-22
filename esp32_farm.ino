@@ -22,20 +22,24 @@ int soil  = 34;    // Soil Moisture (ADC1 - Input only)
 int pir   = 13;    // PIR Motion Sensor
 int water = 12;    // Water Level Sensor
 
-// ACTUATORS & LEDS
-// NOTE: GPIO 35 is input-only on ESP32, so Red LED is assigned to GPIO 27
-int red   = 27;    // Error / Alert LED (changed from 35)
-int green = 32;    // Status OK LED
-int blue1 = 25;    // Indicator LED 1
-int blue2 = 26;    // Indicator LED 2
-int pump  = 15;    // Relay / Water Pump Control
+// ACTUATORS, BUZZER & LEDS
+int red    = 27;   // Error / Alert LED
+int green  = 32;   // Status OK LED
+int blue1  = 25;   // Indicator LED 1
+int blue2  = 26;   // Indicator LED 2
+int pump   = 15;   // Relay / Water Pump Control
+int buzzer = 23;   // Siren / Alarm Buzzer (GPIO 23)
 
 DHT dht(dhtPin, DHT11);
 WiFiClient espClient;
 PubSubClient client(espClient);
 
 unsigned long lastMsgTime = 0;
-const unsigned long publishInterval = 5000; // Publish sensors every 5 seconds
+const unsigned long publishInterval = 5000; // Periodic sensor heartbeat (5 seconds)
+
+// Edge Detection State Tracking
+int lastPirState = -1;
+int lastWaterState = -1;
 
 // ==============================================================================
 // HOME ASSISTANT AUTO-DISCOVERY
@@ -69,8 +73,18 @@ void publish_homeassistant_discovery() {
   client.publish("homeassistant/switch/esp32_farm/pump/config",
     ("{\"name\":\"Farm Water Pump\",\"cmd_t\":\"farm/pump\",\"stat_t\":\"farm/pump/state\",\"pl_on\":\"ON\",\"pl_off\":\"OFF\",\"icon\":\"mdi:pump\",\"uniq_id\":\"farm_pump\"" + device).c_str(), true);
 
-  // Send current pump status
+  // 7. Security Siren Buzzer Switch
+  client.publish("homeassistant/switch/esp32_farm/siren/config",
+    ("{\"name\":\"Farm Alarm Siren\",\"cmd_t\":\"farm/alarm/siren\",\"stat_t\":\"farm/alarm/siren/state\",\"pl_on\":\"ON\",\"pl_off\":\"OFF\",\"icon\":\"mdi:bullhorn\",\"uniq_id\":\"farm_siren\"" + device).c_str(), true);
+
+  // 8. Node Connectivity Status (Binary Sensor)
+  client.publish("homeassistant/binary_sensor/esp32_farm/status/config",
+    ("{\"name\":\"Farm Node Connectivity\",\"stat_t\":\"farm/status\",\"payload_on\":\"online\",\"payload_off\":\"offline\",\"dev_cla\":\"connectivity\",\"uniq_id\":\"farm_status\"" + device).c_str(), true);
+
+  // Send current status
   client.publish("farm/pump/state", digitalRead(pump) == HIGH ? "ON" : "OFF", true);
+  client.publish("farm/alarm/siren/state", digitalRead(buzzer) == HIGH ? "ON" : "OFF", true);
+  client.publish("farm/status", "online", true);
 }
 
 // ==============================================================================
@@ -107,16 +121,41 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("]: ");
   Serial.println(message);
 
+  // Pump Command Handling with Safety Check
   if (strcmp(topic, "farm/pump") == 0) {
     if (message == "ON") {
-      digitalWrite(pump, HIGH);
-      client.publish("farm/pump/state", "ON", true);
-      Serial.println(">> Water pump switched ON via Home Assistant");
+      int currentWater = digitalRead(water);
+      if (currentWater == 0) {
+        // AUTONOMOUS SAFETY INTERLOCK: Tank empty, refuse to run pump
+        digitalWrite(pump, LOW);
+        client.publish("farm/pump/state", "OFF", true);
+        client.publish("farm/safety/interlock", "DRY_RUN_PREVENTED", true);
+        Serial.println(">> REJECTED PUMP ON: Water level is 0! Dry run blocked.");
+      } else {
+        digitalWrite(pump, HIGH);
+        client.publish("farm/pump/state", "ON", true);
+        Serial.println(">> Water pump switched ON");
+      }
     } 
     else if (message == "OFF") {
       digitalWrite(pump, LOW);
       client.publish("farm/pump/state", "OFF", true);
-      Serial.println(">> Water pump switched OFF via Home Assistant");
+      Serial.println(">> Water pump switched OFF");
+    }
+  }
+
+  // Siren / Buzzer Command Handling
+  if (strcmp(topic, "farm/alarm/siren") == 0) {
+    if (message == "ON") {
+      digitalWrite(buzzer, HIGH);
+      digitalWrite(red, HIGH);
+      client.publish("farm/alarm/siren/state", "ON", true);
+      Serial.println(">> SIREN ACTIVATED (GPIO 23) <<");
+    } else if (message == "OFF") {
+      digitalWrite(buzzer, LOW);
+      digitalWrite(red, LOW);
+      client.publish("farm/alarm/siren/state", "OFF", true);
+      Serial.println(">> Siren Silenced <<");
     }
   }
 }
@@ -129,9 +168,13 @@ void reconnect() {
 
     String clientId = "ESP32Farm-" + String((uint32_t)ESP.getEfuseMac(), HEX);
 
-    if (client.connect(clientId.c_str())) {
+    // Connect with MQTT Last Will and Testament (LWT)
+    // If ESP32 abruptly disconnects or loses power, Mosquitto automatically publishes "offline"
+    if (client.connect(clientId.c_str(), "farm/status", 1, true, "offline")) {
       Serial.println("CONNECTED!");
+      client.publish("farm/status", "online", true);
       client.subscribe("farm/pump");
+      client.subscribe("farm/alarm/siren");
       publish_homeassistant_discovery();
     } else {
       Serial.print("Failed, rc=");
@@ -146,7 +189,6 @@ void reconnect() {
 // SETUP
 // ==============================================================================
 void setup() {
-  // Serial must be started first to view boot messages
   Serial.begin(115200);
   delay(200);
 
@@ -156,7 +198,10 @@ void setup() {
   pinMode(blue1, OUTPUT);
   pinMode(blue2, OUTPUT);
   pinMode(pump, OUTPUT);
-  digitalWrite(pump, LOW); // Ensure pump starts in OFF state
+  pinMode(buzzer, OUTPUT);
+
+  digitalWrite(pump, LOW);   // Ensure pump starts in OFF state
+  digitalWrite(buzzer, LOW); // Ensure siren starts in OFF state
 
   pinMode(pir, INPUT);
   pinMode(ldr, INPUT);
@@ -179,18 +224,41 @@ void loop() {
   if (!client.connected()) {
     reconnect();
   }
-  client.loop(); // Keeps MQTT connection alive and handles pump commands instantly
+  client.loop();
 
-  // Non-blocking timer: read and publish sensors every 5 seconds
+  // 1. HARDWARE FAILSAFE INTERLOCK (Evaluated every loop cycle < 50ms)
+  int currentWater = digitalRead(water);
+  if (currentWater == 0 && digitalRead(pump) == HIGH) {
+    digitalWrite(pump, LOW);
+    client.publish("farm/pump/state", "OFF", true);
+    client.publish("farm/safety/interlock", "DRY_RUN_EMERGENCY_SHUTDOWN", true);
+    Serial.println(">> CRITICAL SAFETY INTERLOCK: Water reservoir depleted! Shutting down pump immediately! <<");
+  }
+
+  // 2. IMMEDIATE EDGE-TRIGGERED PUBLISHING (Sub-second event dispatch)
+  int currentPir = digitalRead(pir);
+  if (currentPir != lastPirState) {
+    lastPirState = currentPir;
+    client.publish("farm/pir", String(currentPir).c_str());
+    Serial.print("Edge Trigger -> PIR Motion: ");
+    Serial.println(currentPir);
+  }
+
+  if (currentWater != lastWaterState) {
+    lastWaterState = currentWater;
+    client.publish("farm/water", String(currentWater).c_str(), true);
+    Serial.print("Edge Trigger -> Water Level: ");
+    Serial.println(currentWater);
+  }
+
+  // 3. PERIODIC HEARTBEAT TELEMETRY (Every 5 seconds)
   unsigned long now = millis();
   if (now - lastMsgTime >= publishInterval) {
     lastMsgTime = now;
 
-    int pirVal   = digitalRead(pir);
-    float temp   = dht.readTemperature();
-    int ldrVal   = digitalRead(ldr);
-    int waterVal = digitalRead(water);
-    int rawSoil  = analogRead(soil);
+    float temp  = dht.readTemperature();
+    int ldrVal  = digitalRead(ldr);
+    int rawSoil = analogRead(soil);
 
     // Check sensor reading validity
     if (isnan(temp)) {
@@ -202,11 +270,19 @@ void loop() {
       digitalWrite(red, LOW);
     }
 
-    // Map 12-bit ADC (0 - 4095) to percentage (0 - 100%)
-    int soilPercentage = map(rawSoil, 4095, 0, 0, 100);
-    soilPercentage = constrain(soilPercentage, 0, 100);
+    // Convert raw analog soil reading to percentage (0 - 100%)
+    int soilPercent = map(rawSoil, 4095, 1500, 0, 100);
+    soilPercent = constrain(soilPercent, 0, 100);
 
-    // Indicator LEDs for LDR
+    // Publish periodic telemetry
+    client.publish("farm/status", "online", true); // Heartbeat
+    client.publish("farm/ldr", String(ldrVal).c_str());
+    client.publish("farm/soil", String(soilPercent).c_str());
+    if (!isnan(temp)) {
+      client.publish("farm/temp", String(temp, 1).c_str());
+    }
+
+    // Auto night lighting
     if (ldrVal == 1) {
       digitalWrite(blue1, HIGH);
       digitalWrite(blue2, HIGH);
@@ -214,31 +290,5 @@ void loop() {
       digitalWrite(blue1, LOW);
       digitalWrite(blue2, LOW);
     }
-
-    // Auto-irrigation check (optional local safety)
-    if (soilPercentage < 20 && waterVal == 1) {
-      Serial.println("Soil dry and water available: Auto pump ON");
-      digitalWrite(pump, HIGH);
-      client.publish("farm/pump/state", "ON", true);
-    }
-
-    if (pirVal == 1) {
-      Serial.println("Motion detected (Animal / Human)");
-    }
-
-    // Print Telemetry to Serial Monitor
-    Serial.println("-------------------------------------");
-    Serial.printf("Temp: %.1f °C | Soil: %d %% | PIR: %d | Water: %d | LDR: %d\n",
-                  temp, soilPercentage, pirVal, waterVal, ldrVal);
-
-    // Publish to MQTT for Home Assistant
-    if (!isnan(temp)) {
-      client.publish("farm/temp", String(temp, 1).c_str());
-    }
-    client.publish("farm/soil", String(soilPercentage).c_str());
-    client.publish("farm/pir", String(pirVal).c_str());
-    client.publish("farm/water", String(waterVal).c_str());
-    client.publish("farm/ldr", String(ldrVal).c_str());
   }
 }
-

@@ -11,6 +11,29 @@ views:
         url: /local/fertility_map.html?v=5
         aspect_ratio: 65%
 
+      # Security Keypad & Operational Health Matrix
+      - type: alarm-panel
+        entity: alarm_control_panel.farm_security_system
+        name: "🛡️ Farm Security Keypad (PIN: 1234)"
+        states:
+          - arm_home
+          - arm_away
+
+      - type: entities
+        title: "🛡️ Security & Health Status Matrix"
+        show_header_toggle: false
+        entities:
+          - entity: sensor.farm_security_health_status
+            name: System Security Status
+          - entity: binary_sensor.farm_node_connectivity
+            name: ESP32 Hardware Link
+          - entity: switch.farm_alarm_siren
+            name: GPIO 23 Siren Buzzer
+          - entity: binary_sensor.farm_pump_dry_run_risk
+            name: Pump Dry-Run Risk
+          - entity: binary_sensor.farm_freeze_risk
+            name: Frost / Freeze Hazard
+
       # Zone 2: Microclimate, AQI & Barometric Pressure
       - type: weather-forecast
         entity: weather.home

@@ -19,6 +19,20 @@ lovelace:
       show_in_sidebar: true
       filename: farm_dashboard.yaml
 
+# Smart Farm Alarm Control Panel (PIN: 1234)
+alarm_control_panel:
+  - platform: manual
+    name: Farm Security System
+    code: "1234"
+    code_arm_required: false
+    delay_time: 30
+    trigger_time: 300
+    disarmed:
+      trigger_time: 0
+    armed_home:
+      delay_time: 0
+    armed_away:
+      delay_time: 30
 
 # MQTT Smart Farm Entities
 mqtt:
@@ -59,6 +73,13 @@ mqtt:
       device_class: "light"
       unique_id: "farm_ldr"
 
+    - name: "Farm Node Connectivity"
+      state_topic: "farm/status"
+      payload_on: "online"
+      payload_off: "offline"
+      device_class: "connectivity"
+      unique_id: "farm_node_connectivity"
+
   switch:
     - name: "Farm Water Pump"
       state_topic: "farm/pump/state"
@@ -67,6 +88,14 @@ mqtt:
       payload_off: "OFF"
       icon: "mdi:pump"
       unique_id: "farm_pump"
+
+    - name: "Farm Alarm Siren"
+      state_topic: "farm/alarm/siren/state"
+      command_topic: "farm/alarm/siren"
+      payload_on: "ON"
+      payload_off: "OFF"
+      icon: "mdi:bullhorn"
+      unique_id: "farm_alarm_siren"
 
 # Live Meteorological & Air Quality Sensors (Open-Meteo)
 rest:
@@ -95,3 +124,37 @@ rest:
         device_class: "pm25"
         state_class: "measurement"
         unique_id: "farm_pm2_5"
+
+# Safety & Health Template Sensors
+template:
+  - binary_sensor:
+      - name: "Farm Pump Dry-Run Risk"
+        state: "{{ is_state('switch.farm_water_pump', 'on') and is_state('binary_sensor.farm_water_level', 'off') }}"
+        device_class: "problem"
+        unique_id: "farm_pump_dry_run_risk"
+
+      - name: "Farm Freeze Risk"
+        state: "{{ states('sensor.farm_temperature') | float(20) <= 2.0 }}"
+        device_class: "cold"
+        unique_id: "farm_freeze_risk"
+
+    sensor:
+      - name: "Farm Security & Health Status"
+        unique_id: "farm_security_health_status"
+        icon: "mdi:shield-check"
+        state: >
+          {% if is_state('alarm_control_panel.farm_security_system', 'triggered') %}
+            Perimeter Intrusion Detected!
+          {% elif is_state('binary_sensor.farm_node_connectivity', 'off') %}
+            Farm Node Offline
+          {% elif is_state('binary_sensor.farm_pump_dry_run_risk', 'on') %}
+            Dry-Run Hazard: Water Depleted!
+          {% elif is_state('binary_sensor.farm_freeze_risk', 'on') %}
+            Freeze Warning (< 2°C)
+          {% elif is_state('alarm_control_panel.farm_security_system', 'armed_away') %}
+            Armed Away - Full Perimeter Guard
+          {% elif is_state('alarm_control_panel.farm_security_system', 'armed_home') %}
+            Armed Home - Safety Guard Active
+          {% else %}
+            All Systems Normal (Disarmed)
+          {% endif %}

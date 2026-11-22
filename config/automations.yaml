@@ -1,15 +1,126 @@
-- id: 'farm_motion_detection_alert'
-  alias: 'Farm: Motion Alert'
-  description: 'Notify when PIR sensor detects human or animal movement'
+# 1. Intrusion Alarm: 3-Second Temporal Filter (Suppresses False Positives)
+- id: 'farm_intrusion_confirmed_alert'
+  alias: 'Security: Confirmed Perimeter Intrusion'
+  description: 'Trigger alarm when motion sustains for >= 3 seconds while Armed Away'
   trigger:
     - platform: state
       entity_id: binary_sensor.farm_motion_detection
       to: 'on'
+      for:
+        seconds: 3
+  condition:
+    - condition: state
+      entity_id: alarm_control_panel.farm_security_system
+      state: 'armed_away'
+  mode: single
+  action:
+    - action: alarm_control_panel.alarm_trigger
+      target:
+        entity_id: alarm_control_panel.farm_security_system
+    - action: switch.turn_on
+      target:
+        entity_id: switch.farm_alarm_siren
+    - action: camera.snapshot
+      target:
+        entity_id: camera.camera
+      data:
+        filename: '/config/www/security_snapshot.jpg'
+    - action: persistent_notification.create
+      data:
+        title: '🚨 SECURITY ALERT: Confirmed Intrusion'
+        message: 'Perimeter motion sustained for >= 3 seconds at {{ now().strftime("%H:%M:%S") }}. Siren activated and camera frame captured.'
+        notification_id: 'farm_security_alert'
+
+# 2. Equipment Safety: Autonomous Dry-Run Emergency Interlock
+- id: 'farm_pump_dry_run_interlock'
+  alias: 'Safety: Pump Dry-Run Emergency Interlock'
+  description: 'Instantly cut off water pump if water reservoir is empty'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.farm_water_level
+      to: 'off'
+    - platform: state
+      entity_id: binary_sensor.farm_pump_dry_run_risk
+      to: 'on'
+  condition:
+    - condition: state
+      entity_id: switch.farm_water_pump
+      state: 'on'
+  mode: restart
+  action:
+    - action: switch.turn_off
+      target:
+        entity_id: switch.farm_water_pump
+    - action: persistent_notification.create
+      data:
+        title: '⚠️ EQUIPMENT HAZARD: Pump Emergency Cutoff'
+        message: 'Water reservoir depleted while pump was running! Emergency interlock engaged to protect pump motor.'
+        notification_id: 'farm_hazard_pump'
+
+# 3. Alarm Siren Activation on Triggered State
+- id: 'farm_alarm_triggered_siren'
+  alias: 'Security: Siren Activation on Alarm Trigger'
+  description: 'Turn on buzzer and flash alert when alarm is triggered'
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.farm_security_system
+      to: 'triggered'
+  action:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.farm_alarm_siren
+    - action: persistent_notification.create
+      data:
+        title: '🚨 FARM ALARM TRIGGERED'
+        message: 'Alarm panel breached at {{ now().strftime("%H:%M:%S") }}! Audio siren is sounding.'
+        notification_id: 'farm_alarm_active'
+
+# 4. Alarm Siren Silence on Disarm (PIN Verified)
+- id: 'farm_alarm_disarmed_silence'
+  alias: 'Security: Silence Siren on Disarm'
+  description: 'Shut off siren and clear alert when system is disarmed with PIN'
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.farm_security_system
+      to: 'disarmed'
+  action:
+    - action: switch.turn_off
+      target:
+        entity_id: switch.farm_alarm_siren
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: 'farm_security_alert'
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: 'farm_alarm_active'
+
+# 5. Connectivity Watchdog: Node Offline Alert
+- id: 'farm_connectivity_watchdog'
+  alias: 'Safety: Connectivity Loss Watchdog'
+  description: 'Alert when ESP32 farm node disconnects or drops offline'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.farm_node_connectivity
+      to: 'off'
+      for:
+        seconds: 15
   mode: single
   action:
     - action: persistent_notification.create
       data:
-        title: 'Farm Alert: Motion Detected'
-        message: 'PIR motion sensor detected movement (human or animal) at {{ now().strftime("%H:%M:%S") }}. Check the Farm Camera stream.'
-        notification_id: 'farm_motion_alert'
-    - delay: '00:00:30'
+        title: '📡 CONNECTIVITY ALERT: Farm Node Offline'
+        message: 'ESP32 Farm Node disconnected from MQTT broker. Hardware failsafes are active locally.'
+        notification_id: 'farm_offline_alert'
+
+# 6. Connectivity Recovery Notification
+- id: 'farm_connectivity_restored'
+  alias: 'Safety: Connectivity Restored'
+  description: 'Notify when ESP32 reconnects and clear offline alert'
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.farm_node_connectivity
+      to: 'on'
+  action:
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: 'farm_offline_alert'
