@@ -160,28 +160,51 @@ def run_mqtt_daemon():
     TOPIC_RESULT = "farm/security/human_detected"
 
     detector = PersonDetector()
-    client = mqtt.Client(client_id="person_detector_daemon")
+    try:
+        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="person_detector_daemon")
+    except (AttributeError, TypeError):
+        client = mqtt.Client(client_id="person_detector_daemon")
 
-    def on_connect(c, userdata, flags, rc):
-        print(f"[PersonDetector Daemon] Connected to MQTT broker with result code {rc}")
-        c.subscribe(TOPIC_REQUEST)
-        print(f"[PersonDetector Daemon] Subscribed to {TOPIC_REQUEST}")
+    last_processed_mtime = 0
 
-    def on_message(c, userdata, msg):
-        print(f"[PersonDetector Daemon] Received scan request on {msg.topic}")
-        # Brief sleep to ensure file write buffer completed
+    def process_and_publish():
+        nonlocal last_processed_mtime
+        if not os.path.exists(SNAPSHOT_FILE):
+            return
+        mtime = os.path.getmtime(SNAPSHOT_FILE)
         time.sleep(0.3)
         res = detector.process_snapshot(SNAPSHOT_FILE, ALERT_FILE)
         payload = json.dumps(res)
-        c.publish(TOPIC_RESULT, payload)
-        print(f"[PersonDetector Daemon] Published result to {TOPIC_RESULT}: {payload}")
+        client.publish(TOPIC_RESULT, payload, retain=True)
+        last_processed_mtime = mtime
+        print(f"[PersonDetector Daemon] Published result: {payload}", flush=True)
+
+    def on_connect(c, userdata, flags, rc, *args):
+        print(f"[PersonDetector Daemon] Connected to MQTT broker (rc: {rc})", flush=True)
+        c.subscribe(TOPIC_REQUEST)
+        print(f"[PersonDetector Daemon] Subscribed to {TOPIC_REQUEST}", flush=True)
+
+    def on_message(c, userdata, msg):
+        print(f"[PersonDetector Daemon] Scan request received on {msg.topic}", flush=True)
+        process_and_publish()
 
     client.on_connect = on_connect
     client.on_message = on_message
 
-    print(f"[PersonDetector Daemon] Connecting to {MQTT_BROKER}:{MQTT_PORT}...")
+    print(f"[PersonDetector Daemon] Connecting to {MQTT_BROKER}:{MQTT_PORT}...", flush=True)
     client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    client.loop_forever()
+    client.loop_start()
+
+    # Main loop: checks MQTT and also watches file changes as a backup
+    try:
+        while True:
+            if os.path.exists(SNAPSHOT_FILE):
+                mtime = os.path.getmtime(SNAPSHOT_FILE)
+                if mtime > last_processed_mtime:
+                    process_and_publish()
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        client.loop_stop()
 
 if __name__ == "__main__":
     if "--daemon" in sys.argv:
