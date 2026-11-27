@@ -37,6 +37,7 @@ alarm_control_panel:
       arming_time: 0
       delay_time: 0
 
+
 # MQTT Smart Farm Entities
 mqtt:
   sensor:
@@ -45,6 +46,7 @@ mqtt:
       unit_of_measurement: "°C"
       device_class: "temperature"
       state_class: "measurement"
+      expire_after: 15
       unique_id: "farm_temp"
 
     - name: "Farm Soil Moisture"
@@ -52,6 +54,7 @@ mqtt:
       unit_of_measurement: "%"
       icon: "mdi:watering-can"
       state_class: "measurement"
+      expire_after: 20
       unique_id: "farm_soil"
 
   binary_sensor:
@@ -74,6 +77,7 @@ mqtt:
       payload_on: "1"
       payload_off: "0"
       device_class: "light"
+      expire_after: 20
       unique_id: "farm_ldr"
 
     - name: "Farm Node Connectivity"
@@ -81,6 +85,7 @@ mqtt:
       payload_on: "online"
       payload_off: "offline"
       device_class: "connectivity"
+      expire_after: 20
       unique_id: "farm_node_connectivity"
 
     - name: "Farm Human Detected"
@@ -172,3 +177,11 @@ template:
           {% else %}
             All Systems Normal (Disarmed)
           {% endif %}
+
+# Cybersecurity: Brute-Force IP Ban & System Log Event Monitoring
+http:
+  ip_ban_enabled: true
+  login_attempts_threshold: 5
+
+system_log:
+  fire_event: true

@@ -52,6 +52,20 @@
 
           [🔗 Open High-Resolution Photograph](/local/intruder_alert.jpg?t={{ as_timestamp(now()) | int }})
         notification_id: 'farm_security_alert_{{ now().strftime("%Y%m%d_%H%M%S") }}'
+    - action: notify.mobile_app_roger_phone
+      continue_on_error: true
+      data:
+        title: '🚨 INTRUDER CONFIRMED'
+        message: 'Visual AI confirmed human presence at {{ now().strftime("%H:%M:%S") }}! Siren activated.'
+        data:
+          image: '/local/intruder_alert.jpg?t={{ as_timestamp(now()) | int }}'
+          url: '/smart-farm/0'
+          clickAction: '/smart-farm/0'
+          tag: 'farm_security_alert'
+          priority: high
+          ttl: 0
+          push:
+            interruption-level: time-sensitive
 
 # 2. Equipment Safety: Autonomous Dry-Run Emergency Interlock
 - id: 'farm_pump_dry_run_interlock'
@@ -78,6 +92,15 @@
         title: '⚠️ EQUIPMENT HAZARD: Pump Emergency Cutoff'
         message: 'Water reservoir depleted while pump was running! Emergency interlock engaged to protect pump motor.'
         notification_id: 'farm_hazard_pump'
+    - action: notify.mobile_app_roger_phone
+      continue_on_error: true
+      data:
+        title: '⚠️ EQUIPMENT HAZARD: Pump Cutoff'
+        message: 'Water reservoir depleted while pump was running! Emergency interlock engaged.'
+        data:
+          url: '/smart-farm/0'
+          clickAction: '/smart-farm/0'
+          tag: 'farm_hazard_pump'
 
 # 3. Alarm Siren Activation on Triggered State
 - id: 'farm_alarm_triggered_siren'
@@ -96,6 +119,17 @@
         title: '🚨 FARM ALARM TRIGGERED'
         message: 'Alarm panel breached at {{ now().strftime("%H:%M:%S") }}! Audio siren is sounding.'
         notification_id: 'farm_alarm_active'
+    - action: notify.mobile_app_roger_phone
+      continue_on_error: true
+      data:
+        title: '🚨 FARM ALARM TRIGGERED'
+        message: 'Alarm panel breached at {{ now().strftime("%H:%M:%S") }}! Audio siren is sounding.'
+        data:
+          url: '/smart-farm/0'
+          clickAction: '/smart-farm/0'
+          tag: 'farm_alarm_active'
+          priority: high
+          ttl: 0
 
 # 4. Alarm Siren Silence on Disarm (PIN Verified)
 - id: 'farm_alarm_disarmed_silence'
@@ -138,6 +172,15 @@
         title: '📡 CONNECTIVITY ALERT: Farm Node Offline'
         message: 'ESP32 Farm Node disconnected from MQTT broker. Hardware failsafes are active locally.'
         notification_id: 'farm_offline_alert'
+    - action: notify.mobile_app_roger_phone
+      continue_on_error: true
+      data:
+        title: '📡 Farm Node Offline'
+        message: 'ESP32 Farm Node disconnected from MQTT broker. Hardware failsafes remain active.'
+        data:
+          url: '/smart-farm/0'
+          clickAction: '/smart-farm/0'
+          tag: 'farm_offline_alert'
 
 # 6. Connectivity Recovery Notification
 - id: 'farm_connectivity_restored'
@@ -184,3 +227,171 @@
                 entity_id: alarm_control_panel.farm_security_system
               data:
                 code: '1234'
+
+# 8. Sensor Failure Alert: Individual Sensor Unavailable / Unknown
+- id: 'farm_sensor_failure_alert'
+  alias: 'Safety: Sensor Failure Alert'
+  description: 'Notify when any critical farm sensor or camera becomes unavailable or unknown'
+  trigger:
+    - platform: state
+      entity_id:
+        - sensor.farm_temperature
+        - sensor.farm_soil_moisture
+        - binary_sensor.farm_light_level
+        - binary_sensor.farm_motion_detection
+        - binary_sensor.farm_water_level
+        - camera.camera
+      to:
+        - 'unavailable'
+        - 'unknown'
+      for:
+        seconds: 5
+  mode: parallel
+  max: 10
+  action:
+    - action: persistent_notification.create
+      data:
+        title: '⚠️ SENSOR FAILURE ALERT'
+        message: >
+          Sensor **{{ trigger.to_state.attributes.friendly_name | default(trigger.entity_id) }}** (`{{ trigger.entity_id }}`)
+          reported `{{ trigger.to_state.state }}` at {{ now().strftime("%H:%M:%S") }}.
+          Check sensor wiring, ESP32 node, or camera connection.
+        notification_id: 'farm_sensor_failure_{{ trigger.entity_id | replace(".", "_") }}'
+    - action: notify.mobile_app_roger_phone
+      continue_on_error: true
+      data:
+        title: '⚠️ SENSOR FAILURE ALERT'
+        message: 'Sensor {{ trigger.to_state.attributes.friendly_name | default(trigger.entity_id) }} reported {{ trigger.to_state.state }} at {{ now().strftime("%H:%M:%S") }}.'
+        data:
+          url: '/smart-farm/0'
+          clickAction: '/smart-farm/0'
+          tag: 'farm_sensor_failure_{{ trigger.entity_id | replace(".", "_") }}'
+
+# 9. Sensor Failure Recovery: Dismiss Alert When Sensor Recovers
+- id: 'farm_sensor_failure_restored'
+  alias: 'Safety: Sensor Failure Restored'
+  description: 'Dismiss sensor failure notification when the sensor resumes valid readings'
+  trigger:
+    - platform: state
+      entity_id:
+        - sensor.farm_temperature
+        - sensor.farm_soil_moisture
+        - binary_sensor.farm_light_level
+        - binary_sensor.farm_motion_detection
+        - binary_sensor.farm_water_level
+        - camera.camera
+      from:
+        - 'unavailable'
+        - 'unknown'
+      not_to:
+        - 'unavailable'
+        - 'unknown'
+  mode: parallel
+  max: 10
+  action:
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: 'farm_sensor_failure_{{ trigger.entity_id | replace(".", "_") }}'
+    - action: notify.mobile_app_roger_phone
+      continue_on_error: true
+      data:
+        message: 'clear_notification'
+        data:
+          tag: 'farm_sensor_failure_{{ trigger.entity_id | replace(".", "_") }}'
+
+# 10. Periodic Disconnect Watchdog (Every 20 Seconds)
+- id: 'farm_periodic_disconnect_watchdog'
+  alias: 'Safety: Periodic Disconnect Check (Every 20s)'
+  description: 'Periodically check every 20s if ESP32 node or any critical sensor/camera is disconnected or unavailable'
+  trigger:
+    - platform: time_pattern
+      seconds: '/20'
+  mode: single
+  action:
+    - if:
+        - condition: template
+          value_template: "{{ states('binary_sensor.farm_node_connectivity') in ['off', 'unavailable', 'unknown'] }}"
+      then:
+        - action: persistent_notification.create
+          data:
+            title: '📡 CONNECTIVITY ALERT: Farm Node Offline'
+            message: 'ESP32 Farm Node is disconnected ({{ states("binary_sensor.farm_node_connectivity") }}) as of {{ now().strftime("%H:%M:%S") }}. Hardware failsafes are active locally.'
+            notification_id: 'farm_offline_alert'
+    - repeat:
+        for_each:
+          - sensor.farm_temperature
+          - sensor.farm_soil_moisture
+          - binary_sensor.farm_light_level
+          - binary_sensor.farm_motion_detection
+          - binary_sensor.farm_water_level
+          - camera.camera
+        sequence:
+          - if:
+              - condition: template
+                value_template: "{{ states(repeat.item) in ['unavailable', 'unknown'] }}"
+            then:
+              - action: persistent_notification.create
+                data:
+                  title: '⚠️ SENSOR FAILURE ALERT'
+                  message: >
+                    Sensor **{{ state_attr(repeat.item, "friendly_name") | default(repeat.item) }}** (`{{ repeat.item }}`)
+                    is disconnected (`{{ states(repeat.item) }}`) as of {{ now().strftime("%H:%M:%S") }}.
+                    Check sensor wiring, ESP32 node, or camera connection.
+                  notification_id: 'farm_sensor_failure_{{ repeat.item | replace(".", "_") }}'
+
+# 11. Cybersecurity Alert: Failed Login, IP Ban, Invalid PIN, or Suspicious MQTT Command
+- id: 'farm_cybersecurity_intrusion_alert'
+  alias: 'Security: Cyber Intrusion & Brute-Force Warning'
+  description: 'Warn on failed Home Assistant logins, invalid API auth, wrong alarm PINs, or invalid MQTT alarm commands'
+  trigger:
+    - platform: event
+      event_type: system_log_event
+    - platform: mqtt
+      topic: 'farm/alarm/set'
+  condition:
+    - condition: template
+      value_template: >
+        {% if trigger.platform == 'event' %}
+          {% set msg = (trigger.event.data.message | join(' ') if trigger.event.data.message is iterable and trigger.event.data.message is not string else trigger.event.data.message | string) | lower %}
+          {% set name = trigger.event.data.name | default('') | lower %}
+          {{ 'invalid authentication' in msg or 'login attempt' in msg or 'banned' in msg or 'invalid_code' in msg or 'http.ban' in name }}
+        {% elif trigger.platform == 'mqtt' %}
+          {{ trigger.payload not in ['ARM_AWAY', 'ARM_HOME', 'DISARM'] }}
+        {% else %}
+          false
+        {% endif %}
+  mode: queued
+  max: 5
+  action:
+    - variables:
+        alert_detail: >
+          {% if trigger.platform == 'mqtt' %}
+            Suspicious MQTT command on `farm/alarm/set`: `{{ trigger.payload }}`
+          {% else %}
+            {% set msg = trigger.event.data.message | join(' ') if trigger.event.data.message is iterable and trigger.event.data.message is not string else trigger.event.data.message | string %}
+            {% if 'invalid_code' in (msg | lower) %}
+              Wrong Alarm PIN entered on keypad (`invalid_code`)
+            {% else %}
+              {{ msg }}
+            {% endif %}
+          {% endif %}
+    - action: persistent_notification.create
+      data:
+        title: '🛡️ CYBERSECURITY WARNING: Unauthorized Access Attempt'
+        message: >
+          Suspicious activity detected at {{ now().strftime("%H:%M:%S") }}:
+          {{ alert_detail }}
+        notification_id: 'farm_cyber_security_alert'
+    - action: notify.mobile_app_roger_phone
+      continue_on_error: true
+      data:
+        title: '🛡️ CYBERSECURITY WARNING'
+        message: 'Unauthorized access attempt at {{ now().strftime("%H:%M:%S") }}: {{ alert_detail }}'
+        data:
+          url: '/smart-farm/0'
+          clickAction: '/smart-farm/0'
+          tag: 'farm_cyber_security_alert'
+          priority: high
+          ttl: 0
+          push:
+            interruption-level: time-sensitive
