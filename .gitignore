@@ -24,3 +24,25 @@ mosquitto/log/
 
 config/.storage/core.restore_state
 config/.storage/trace.saved_traces
+
+# Runtime-generated / sensitive scripts
+scripts/get_ha_token.py
+scripts/reload_automations.py
+
+# Captured intruder images (privacy)
+config/www/intruder_alert.jpg
+config/www/security_snapshot.jpg
+
+# Logs directory
+logs/
+
+# HA temp storage files
+config/.storage/tmp*
+
+# HA runtime state (changes every run, not meaningful to track)
+config/.storage/core.config_entries
+config/.storage/core.entity_registry
+config/.storage/homeassistant.exposed_entities
+config/.storage/marketplace.common
+config/.storage/marketplace.repositories
+config/.storage/repairs.issue_registry

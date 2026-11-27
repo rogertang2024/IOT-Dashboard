@@ -5,8 +5,8 @@
 // ==============================================================================
 // NETWORK CONFIGURATION
 // ==============================================================================
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
+const char* ssid     = "YOUR_WIFI_SSID";       // Replace with your WiFi SSID
+const char* password = "YOUR_WIFI_PASSWORD";   // Replace with your WiFi password
 
 // The IP of the PC running the Mosquitto MQTT broker
 const char* mqtt_server = "192.168.1.251";
@@ -177,6 +177,8 @@ void reconnect() {
       client.subscribe("farm/alarm/siren");
       publish_homeassistant_discovery();
     } else {
+      digitalWrite(red, HIGH);
+      digitalWrite(green, LOW);
       Serial.print("Failed, rc=");
       Serial.print(client.state());
       Serial.println(" - Retrying in 3 seconds...");
@@ -259,26 +261,31 @@ void loop() {
     float temp  = dht.readTemperature();
     int ldrVal  = digitalRead(ldr);
     int rawSoil = analogRead(soil);
+    bool dhtOk  = !isnan(temp);
 
-    // Check sensor reading validity
-    if (isnan(temp)) {
+    // Check sensor & node health (preserve red LED if siren is active)
+    if (!dhtOk) {
       digitalWrite(red, HIGH);
       digitalWrite(green, LOW);
       Serial.println("Warning: DHT sensor read failure!");
     } else {
       digitalWrite(green, HIGH);
-      digitalWrite(red, LOW);
+      if (digitalRead(buzzer) == LOW) {
+        digitalWrite(red, LOW);
+      }
     }
 
     // Convert raw analog soil reading to percentage (0 - 100%)
     int soilPercent = map(rawSoil, 4095, 1500, 0, 100);
     soilPercent = constrain(soilPercent, 0, 100);
 
-    // Publish periodic telemetry
+    // Publish periodic telemetry for ALL sensors every 5s
     client.publish("farm/status", "online", true); // Heartbeat
     client.publish("farm/ldr", String(ldrVal).c_str());
     client.publish("farm/soil", String(soilPercent).c_str());
-    if (!isnan(temp)) {
+    client.publish("farm/pir", String(currentPir).c_str());
+    client.publish("farm/water", String(currentWater).c_str(), true);
+    if (dhtOk) {
       client.publish("farm/temp", String(temp, 1).c_str());
     }
 

@@ -134,12 +134,10 @@ views:
         show_state: false
 
       # Zone 5: Intruder Detection & Photograph Alert
-      - type: picture
-        title: "📸 Latest Intruder Snapshot & AI Verification"
-        image: /local/intruder_alert.jpg
-        tap_action:
-          action: url
-          url_path: /local/intruder_alert.jpg
+      - type: markdown
+        title: "📸 Latest Intruder Snapshot (Verified AI)"
+        content: >
+          <img src="/local/intruder_alert.jpg?t={{ as_timestamp(now()) }}" style="width:100%; border-radius: 8px; border: 2px solid #e53935;" />
 
       - type: conditional
         conditions:
